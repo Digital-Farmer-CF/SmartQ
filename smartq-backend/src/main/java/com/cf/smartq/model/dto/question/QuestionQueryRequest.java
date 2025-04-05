@@ -1,11 +1,13 @@
 package com.cf.smartq.model.dto.question;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.cf.smartq.common.PageRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Date;
 
 /**
  * 查询问题请求
@@ -19,37 +21,37 @@ public class QuestionQueryRequest extends PageRequest implements Serializable {
     /**
      * id
      */
+    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
     /**
-     * id
+     * 题目内容（json格式）
      */
-    private Long notId;
+    private String questionContent;
 
     /**
-     * 搜索词
+     * 应用 id
      */
-    private String searchText;
-
-    /**
-     * 标题
-     */
-    private String title;
-
-    /**
-     * 内容
-     */
-    private String content;
-
-    /**
-     * 标签列表
-     */
-    private List<String> tags;
+    private Long appId;
 
     /**
      * 创建用户 id
      */
     private Long userId;
 
-    private static final long serialVersionUID = 1L;
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
+
+    /**
+     * 是否删除
+     */
+    private Integer isDelete;
+
 }

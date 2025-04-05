@@ -1,9 +1,12 @@
 package com.cf.smartq.model.dto.useranswer;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Date;
 
 /**
  * 编辑用户回答请求
@@ -14,24 +17,61 @@ import java.util.List;
 public class UserAnswerEditRequest implements Serializable {
 
     /**
-     * id
+     * 忘记这个id是干嘛的了 TODO
      */
-    private Long id;
+    private Long appId;
 
     /**
-     * 标题
+     * 应用类型（0-得分类，1-角色测评类）
      */
-    private String title;
+    private Integer appType;
 
     /**
-     * 内容
+     * 评分策略（0-自定义，1-AI）
      */
-    private String content;
+    private Integer scoringStrategy;
 
     /**
-     * 标签列表
+     * 用户答案（JSON 数组）
      */
-    private List<String> tags;
+    private String choices;
 
+    /**
+     * 评分结果 id
+     */
+    private Long resultId;
+
+    /**
+     * 结果名称，如物流师
+     */
+    private String resultName;
+
+    /**
+     * 结果描述
+     */
+    private String resultDesc;
+
+    /**
+     * 得分
+     */
+    private Integer resultScore;
+
+    /**
+     * 用户 id
+     */
+    private Long userId;
+
+
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
+
+    /**
+     * 是否删除
+     */
+    private Integer isDelete;
+
+    @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

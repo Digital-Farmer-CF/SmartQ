@@ -1,9 +1,11 @@
 package com.cf.smartq.model.dto.result;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Date;
 
 /**
  * 创建评分结果请求
@@ -14,19 +16,58 @@ import java.util.List;
 public class ScoringResultAddRequest implements Serializable {
 
     /**
-     * 标题
+     * id
      */
-    private String title;
+    @TableId(type = IdType.ASSIGN_ID)
+    private Long id;
 
     /**
-     * 内容
+     * 结果名称，如物流师
      */
-    private String content;
+    private String resultName;
 
     /**
-     * 标签列表
+     * 结果描述
      */
-    private List<String> tags;
+    private String resultDesc;
 
-    private static final long serialVersionUID = 1L;
+    /**
+     * 结果图片
+     */
+    private String resultPicture;
+
+    /**
+     * 结果属性集合 JSON，如 [I,S,T,J]
+     */
+    private String resultProp;
+
+    /**
+     * 结果得分范围，如 80，表示 80及以上的分数命中此结果
+     */
+    private Integer resultScoreRange;
+
+    /**
+     * 应用 id
+     */
+    private Long appId;
+
+    /**
+     * 创建用户 id
+     */
+    private Long userId;
+
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
+
+    /**
+     * 是否删除
+     */
+    private Integer isDelete;
 }

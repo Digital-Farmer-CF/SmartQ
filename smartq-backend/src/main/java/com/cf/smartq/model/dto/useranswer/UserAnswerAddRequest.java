@@ -1,9 +1,12 @@
 package com.cf.smartq.model.dto.useranswer;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Date;
 
 /**
  * 创建用户回答请求
@@ -12,21 +15,77 @@ import java.util.List;
  */
 @Data
 public class UserAnswerAddRequest implements Serializable {
+    /**
+     *忘记这个id是干嘛的了 TODO
+     */
+    @TableId(type = IdType.ASSIGN_ID)
+    private Long id;
 
     /**
-     * 标题
+     * 应用 id
      */
-    private String title;
+    private Long appId;
 
     /**
-     * 内容
+     * 应用类型（0-得分类，1-角色测评类）
      */
-    private String content;
+    private Integer appType;
 
     /**
-     * 标签列表
+     * 评分策略（0-自定义，1-AI）
      */
-    private List<String> tags;
+    private Integer scoringStrategy;
 
+    /**
+     * 用户答案（JSON 数组）
+     */
+    private String choices;
+
+    /**
+     * 评分结果 id
+     */
+    private Long resultId;
+
+    /**
+     * 结果名称，如物流师
+     */
+    private String resultName;
+
+    /**
+     * 结果描述
+     */
+    private String resultDesc;
+
+    /**
+     * 结果图标
+     */
+    private String resultPicture;
+
+    /**
+     * 得分
+     */
+    private Integer resultScore;
+
+    /**
+     * 用户 id
+     */
+    private Long userId;
+
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
+
+    /**
+     * 是否删除
+     */
+    private Integer isDelete;
+
+    @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

@@ -1,11 +1,13 @@
 package com.cf.smartq.model.dto.result;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.cf.smartq.common.PageRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Date;
 
 /**
  * 查询评分结果请求
@@ -15,41 +17,36 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class ScoringResultQueryRequest extends PageRequest implements Serializable {
-
     /**
      * id
      */
+    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
     /**
-     * id
+     * 结果名称，如物流师
      */
-    private Long notId;
+    private String resultName;
 
     /**
-     * 搜索词
+     * 结果描述
      */
-    private String searchText;
+    private String resultDesc;
+
 
     /**
-     * 标题
+     * 结果得分范围，如 80，表示 80及以上的分数命中此结果
      */
-    private String title;
+    private Integer resultScoreRange;
 
     /**
-     * 内容
+     * 应用 id
      */
-    private String content;
-
-    /**
-     * 标签列表
-     */
-    private List<String> tags;
+    private Long appId;
 
     /**
      * 创建用户 id
      */
     private Long userId;
 
-    private static final long serialVersionUID = 1L;
 }

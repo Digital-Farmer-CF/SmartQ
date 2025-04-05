@@ -1,9 +1,11 @@
 package com.cf.smartq.model.dto.question;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Date;
 
 /**
  * 创建问题请求
@@ -12,21 +14,34 @@ import java.util.List;
  */
 @Data
 public class QuestionAddRequest implements Serializable {
+    /**
+     * id
+     */
+    @TableId(type = IdType.ASSIGN_ID)
+    private Long id;
 
     /**
-     * 标题
+     * 题目内容（json格式）
      */
-    private String title;
+    private String questionContent;
 
     /**
-     * 内容
+     * 应用 id
      */
-    private String content;
+    private Long appId;
 
     /**
-     * 标签列表
+     * 创建用户 id
      */
-    private List<String> tags;
+    private Long userId;
 
-    private static final long serialVersionUID = 1L;
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
 }

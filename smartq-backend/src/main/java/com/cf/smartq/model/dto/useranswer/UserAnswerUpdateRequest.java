@@ -1,9 +1,12 @@
 package com.cf.smartq.model.dto.useranswer;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Date;
 
 /**
  * 更新用户回答请求
@@ -16,22 +19,19 @@ public class UserAnswerUpdateRequest implements Serializable {
     /**
      * id
      */
+    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
     /**
-     * 标题
+     * 更新时间
      */
-    private String title;
+    private Date updateTime;
 
     /**
-     * 内容
+     * 是否删除
      */
-    private String content;
+    private Integer isDelete;
 
-    /**
-     * 标签列表
-     */
-    private List<String> tags;
-
+    @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }
