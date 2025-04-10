@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 创建评分结果请求
@@ -39,7 +40,7 @@ public class ScoringResultAddRequest implements Serializable {
     /**
      * 结果属性集合 JSON，如 [I,S,T,J]
      */
-    private String resultProp;
+    private List<String> resultProp;
 
     /**
      * 结果得分范围，如 80，表示 80及以上的分数命中此结果

@@ -1,6 +1,8 @@
 package com.cf.smartq.model.vo;
 
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.cf.smartq.model.entity.ScoringResult;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
@@ -16,26 +18,41 @@ import java.util.List;
  */
 @Data
 public class ScoringResultVO implements Serializable {
-
     /**
      * id
      */
+    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
     /**
-     * 标题
+     * 结果名称，如物流师
      */
-    private String title;
+    private String resultName;
 
     /**
-     * 内容
+     * 结果描述
      */
-    private String content;
+    private String resultDesc;
 
     /**
-     * 创建用户 id
+     * 结果图片
      */
-    private Long userId;
+    private String resultPicture;
+
+    /**
+     * 结果属性集合 JSON，如 [I,S,T,J]
+     */
+    private List<String> resultProp;
+
+    /**
+     * 结果得分范围，如 80，表示 80及以上的分数命中此结果
+     */
+    private Integer resultScoreRange;
+
+    /**
+     * 应用 id
+     */
+    private Long appId;
 
     /**
      * 创建时间
@@ -47,32 +64,22 @@ public class ScoringResultVO implements Serializable {
      */
     private Date updateTime;
 
-    /**
-     * 标签列表
-     */
-    private List<String> tagList;
-
-    /**
-     * 创建用户信息
-     */
-    private UserVO user;
-
-    /**
-     * 封装类转对象
-     *
-     * @param scoringresultVO
-     * @return
-     */
-    public static ScoringResult voToObj(ScoringResultVO scoringresultVO) {
-        if (scoringresultVO == null) {
-            return null;
-        }
-        ScoringResult scoringresult = new ScoringResult();
-        BeanUtils.copyProperties(scoringresultVO, scoringresult);
-        List<String> tagList = scoringresultVO.getTagList();
-//        scoringresult.setTags(JSONUtil.toJsonStr(tagList));
-        return scoringresult;
-    }
+//    /**
+//     * 封装类转对象
+//     *
+//     * @param scoringresultVO
+//     * @return
+//     */
+//    public static ScoringResult voToObj(ScoringResultVO scoringresultVO) {
+//        if (scoringresultVO == null) {
+//            return null;
+//        }
+//        ScoringResult scoringresult = new ScoringResult();
+//        BeanUtils.copyProperties(scoringresultVO, scoringresult);
+//        List<String> tagList = scoringresultVO.getTagList();
+////        scoringresult.setTags(JSONUtil.toJsonStr(tagList));
+//        return scoringresult;
+//    }
 
     /**
      * 对象转封装类
@@ -86,7 +93,7 @@ public class ScoringResultVO implements Serializable {
         }
         ScoringResultVO scoringresultVO = new ScoringResultVO();
         BeanUtils.copyProperties(scoringresult, scoringresultVO);
-//        scoringresultVO.setTagList(JSONUtil.toList(scoringresult.getTags(), String.class));
+        scoringresultVO.setResultProp(JSONUtil.toList(scoringresult.getResultProp(), String.class));
         return scoringresultVO;
     }
 }

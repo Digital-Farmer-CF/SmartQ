@@ -1,6 +1,5 @@
 package com.cf.smartq.model.vo;
 
-import cn.hutool.json.JSONUtil;
 import com.cf.smartq.model.entity.App;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;

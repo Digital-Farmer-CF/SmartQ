@@ -1,8 +1,12 @@
 package com.cf.smartq.model.vo;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
+import lombok.Data;
+
 import java.io.Serializable;
 import java.util.Date;
-import lombok.Data;
 
 /**
  * 已登录用户视图（脱敏）
@@ -13,8 +17,9 @@ import lombok.Data;
 public class LoginUserVO implements Serializable {
 
     /**
-     * 用户 id
+     * id
      */
+    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
     /**
