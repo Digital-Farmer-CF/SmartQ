@@ -85,6 +85,19 @@ public class AppQueryRequest extends PageRequest implements Serializable {
     private Date updateTime;
 
     /**
+     * 搜索文本
+     * 用于在查询时根据关键字模糊搜索应用的名称或描述等字段
+     */
+    private String searchText;
+
+
+    /**
+     * 排除的 id
+     * 用于在查询时排除某个特定的应用 id
+     */
+    private Long notId;
+
+    /**
      * 是否删除
      */
     private Integer isDelete;

@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
+import java.lang.reflect.Field;
 /**
  * 应用服务实现
  *
@@ -49,18 +49,45 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
      */
     @Override
     public void validApp(App app, boolean add) {
+        // 判空
         ThrowUtils.throwIf(app == null, ErrorCode.PARAMS_ERROR);
-        // todo 从对象中取值
-        String title = app.getTitle();
-        // 创建数据时，参数不能为空
+
+        String appName = app.getAppName();
+        String appDesc = app.getAppDesc();
+        String appIcon = app.getAppIcon();
+        Integer appType = app.getAppType();
+        Integer scoringStrategy = app.getScoringStrategy();
+
+        // 创建时必填项校验
         if (add) {
-            // todo 补充校验规则
-            ThrowUtils.throwIf(StringUtils.isBlank(title), ErrorCode.PARAMS_ERROR);
+            ThrowUtils.throwIf(StringUtils.isBlank(appName), ErrorCode.PARAMS_ERROR, "应用名不能为空");
+            ThrowUtils.throwIf(StringUtils.isBlank(appDesc), ErrorCode.PARAMS_ERROR, "应用描述不能为空");
+            ThrowUtils.throwIf(StringUtils.isBlank(appIcon), ErrorCode.PARAMS_ERROR, "应用图标不能为空");
+            ThrowUtils.throwIf(appType == null, ErrorCode.PARAMS_ERROR, "应用类型不能为空");
+            ThrowUtils.throwIf(scoringStrategy == null, ErrorCode.PARAMS_ERROR, "评分策略不能为空");
         }
-        // 修改数据时，有参数则校验
-        // todo 补充校验规则
-        if (StringUtils.isNotBlank(title)) {
-            ThrowUtils.throwIf(title.length() > 80, ErrorCode.PARAMS_ERROR, "标题过长");
+
+        // 公共校验（无论新增或修改）
+        if (StringUtils.isNotBlank(appName)) {
+            ThrowUtils.throwIf(appName.length() > 50, ErrorCode.PARAMS_ERROR, "应用名不能超过50字符");
+        }
+
+        if (StringUtils.isNotBlank(appDesc)) {
+            ThrowUtils.throwIf(appDesc.length() > 200, ErrorCode.PARAMS_ERROR, "应用描述不能超过200字符");
+        }
+
+        if (StringUtils.isNotBlank(appIcon)) {
+            // 简单图标链接格式校验
+            boolean isValidUrl = appIcon.startsWith("http://") || appIcon.startsWith("https://");
+            ThrowUtils.throwIf(!isValidUrl, ErrorCode.PARAMS_ERROR, "图标地址格式错误");
+        }
+
+        if (appType != null) {
+            ThrowUtils.throwIf(appType != 0 && appType != 1, ErrorCode.PARAMS_ERROR, "应用类型必须为 0 或 1");
+        }
+
+        if (scoringStrategy != null) {
+            ThrowUtils.throwIf(scoringStrategy != 0 && scoringStrategy != 1, ErrorCode.PARAMS_ERROR, "评分策略必须为 0 或 1");
         }
     }
 
@@ -76,39 +103,59 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
         if (appQueryRequest == null) {
             return queryWrapper;
         }
-        // todo 从对象中取值
-        Long id = appQueryRequest.getId();
-        Long notId = appQueryRequest.getNotId();
-        String title = appQueryRequest.getTitle();
-        String content = appQueryRequest.getContent();
-        String searchText = appQueryRequest.getSearchText();
-        String sortField = appQueryRequest.getSortField();
-        String sortOrder = appQueryRequest.getSortOrder();
-        List<String> tagList = appQueryRequest.getTags();
-        Long userId = appQueryRequest.getUserId();
-        // todo 补充需要的查询条件
-        // 从多字段中搜索
-        if (StringUtils.isNotBlank(searchText)) {
-            // 需要拼接查询条件
-            queryWrapper.and(qw -> qw.like("title", searchText).or().like("content", searchText));
-        }
-        // 模糊查询
-        queryWrapper.like(StringUtils.isNotBlank(title), "title", title);
-        queryWrapper.like(StringUtils.isNotBlank(content), "content", content);
-        // JSON 数组查询
-        if (CollUtil.isNotEmpty(tagList)) {
-            for (String tag : tagList) {
-                queryWrapper.like("tags", "\"" + tag + "\"");
+
+        // 获取所有字段并逐个添加查询条件
+        Field[] fields = appQueryRequest.getClass().getDeclaredFields();
+
+        // 遍历字段并添加查询条件
+        for (Field field : fields) {
+            field.setAccessible(true);  // 使字段可以访问
+            try {
+                Object fieldValue = field.get(appQueryRequest);  // 获取字段的值
+
+                if (fieldValue != null && !"".equals(fieldValue)) {
+                    String fieldName = field.getName();  // 获取字段名
+
+                    // 根据字段类型设置查询条件
+                    if (fieldValue instanceof String) {
+                        queryWrapper.like(fieldName, fieldValue);  // 字符串字段用模糊查询
+                    } else if (fieldValue instanceof Long || fieldValue instanceof Integer) {
+                        queryWrapper.eq(fieldName, fieldValue);  // Long 和 Integer 类型字段用精确查询
+                    } else if (fieldValue instanceof List) {
+                        // 对于 List 类型字段，使用 "in" 查询
+                        List<?> list = (List<?>) fieldValue;
+                        if (!list.isEmpty()) {
+                            queryWrapper.in(fieldName, list);
+                        }
+                    } else if (fieldValue instanceof Object) {
+                        queryWrapper.eq(fieldName, fieldValue);  // 对于其他对象类型使用精确查询
+                    }
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
             }
         }
-        // 精确查询
-        queryWrapper.ne(ObjectUtils.isNotEmpty(notId), "id", notId);
-        queryWrapper.eq(ObjectUtils.isNotEmpty(id), "id", id);
-        queryWrapper.eq(ObjectUtils.isNotEmpty(userId), "userId", userId);
+
+        // 从多字段中搜索 (搜索标题和内容)
+        if (StringUtils.isNotBlank(appQueryRequest.getSearchText())) {
+            queryWrapper.and(qw -> qw.like("title", appQueryRequest.getSearchText())
+                    .or().like("content", appQueryRequest.getSearchText()));
+        }
+
+        // 排除某个 id
+        if (ObjectUtils.isNotEmpty(appQueryRequest.getNotId())) {
+            queryWrapper.ne("id", appQueryRequest.getNotId());
+        }
+
         // 排序规则
-        queryWrapper.orderBy(SqlUtils.validSortField(sortField),
-                sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
-                sortField);
+        String sortField = appQueryRequest.getSortField();
+        String sortOrder = appQueryRequest.getSortOrder();
+        if (StringUtils.isNotBlank(sortField)) {
+            queryWrapper.orderBy(SqlUtils.validSortField(sortField),
+                    sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
+                    sortField);
+        }
+
         return queryWrapper;
     }
 
