@@ -1,12 +1,14 @@
 package com.cf.smartq.model.vo;
 
 import com.cf.smartq.model.entity.App;
+import com.cf.smartq.model.entity.User;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 应用视图
@@ -55,6 +57,8 @@ public class AppVO implements Serializable {
      * 创建用户信息
      */
     private UserVO user;
+
+
 
     /**
      * 封装类转对象

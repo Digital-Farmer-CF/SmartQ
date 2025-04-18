@@ -50,17 +50,34 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
     @Override
     public void validQuestion(Question question, boolean add) {
         ThrowUtils.throwIf(question == null, ErrorCode.PARAMS_ERROR);
-        // todo 从对象中取值
-        String title = question.getTitle();
-        // 创建数据时，参数不能为空
+
+        // 校验题目内容不能为空
+        String questionContent = question.getQuestionContent();
         if (add) {
-            // todo 补充校验规则
-            ThrowUtils.throwIf(StringUtils.isBlank(title), ErrorCode.PARAMS_ERROR);
+            ThrowUtils.throwIf(StringUtils.isBlank(questionContent), ErrorCode.PARAMS_ERROR, "题目内容不能为空");
         }
-        // 修改数据时，有参数则校验
-        // todo 补充校验规则
-        if (StringUtils.isNotBlank(title)) {
-            ThrowUtils.throwIf(title.length() > 80, ErrorCode.PARAMS_ERROR, "标题过长");
+
+        // 校验题目内容长度不超过 1000 字符
+        if (StringUtils.isNotBlank(questionContent)) {
+            ThrowUtils.throwIf(questionContent.length() > 1000, ErrorCode.PARAMS_ERROR, "题目内容过长，不能超过1000字符");
+        }
+
+        // 校验应用 ID 必须有效
+        Long appId = question.getAppId();
+        ThrowUtils.throwIf(appId == null || appId <= 0, ErrorCode.PARAMS_ERROR, "应用 ID 无效");
+
+        // 校验用户 ID 必须有效
+        Long userId = question.getUserId();
+        ThrowUtils.throwIf(userId == null || userId <= 0, ErrorCode.PARAMS_ERROR, "用户 ID 无效");
+
+        // 校验创建时间
+        if (question.getCreateTime() == null) {
+            ThrowUtils.throwIf(true, ErrorCode.PARAMS_ERROR, "创建时间不能为空");
+        }
+
+        // 校验更新时间
+        if (question.getUpdateTime() == null) {
+            ThrowUtils.throwIf(true, ErrorCode.PARAMS_ERROR, "更新时间不能为空");
         }
     }
 

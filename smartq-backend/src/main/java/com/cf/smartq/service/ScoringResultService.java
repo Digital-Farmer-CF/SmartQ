@@ -3,7 +3,7 @@ package com.cf.smartq.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.cf.smartq.model.dto.scoringresult.ScoringResultQueryRequest;
+import com.cf.smartq.model.dto.result.ScoringResultQueryRequest;
 import com.cf.smartq.model.entity.ScoringResult;
 import com.cf.smartq.model.vo.ScoringResultVO;
 

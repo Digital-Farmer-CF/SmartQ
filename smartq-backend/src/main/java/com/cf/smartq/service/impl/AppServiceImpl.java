@@ -170,9 +170,6 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
     public AppVO getAppVO(App app, HttpServletRequest request) {
         // 对象转封装类
         AppVO appVO = AppVO.objToVo(app);
-
-        // todo 可以根据需要为封装对象补充值，不需要的内容可以删除
-        // region 可选
         // 1. 关联查询用户信息
         Long userId = app.getUserId();
         User user = null;
@@ -181,25 +178,6 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
         }
         UserVO userVO = userService.getUserVO(user);
         appVO.setUser(userVO);
-        // 2. 已登录，获取用户点赞、收藏状态
-        long appId = app.getId();
-        User loginUser = userService.getLoginUserPermitNull(request);
-        if (loginUser != null) {
-            // 获取点赞
-            QueryWrapper<AppThumb> appThumbQueryWrapper = new QueryWrapper<>();
-            appThumbQueryWrapper.in("appId", appId);
-            appThumbQueryWrapper.eq("userId", loginUser.getId());
-            AppThumb appThumb = appThumbMapper.selectOne(appThumbQueryWrapper);
-            appVO.setHasThumb(appThumb != null);
-            // 获取收藏
-            QueryWrapper<AppFavour> appFavourQueryWrapper = new QueryWrapper<>();
-            appFavourQueryWrapper.in("appId", appId);
-            appFavourQueryWrapper.eq("userId", loginUser.getId());
-            AppFavour appFavour = appFavourMapper.selectOne(appFavourQueryWrapper);
-            appVO.setHasFavour(appFavour != null);
-        }
-        // endregion
-
         return appVO;
     }
 
@@ -221,48 +199,21 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
         List<AppVO> appVOList = appList.stream().map(app -> {
             return AppVO.objToVo(app);
         }).collect(Collectors.toList());
-
-        // todo 可以根据需要为封装对象补充值，不需要的内容可以删除
-        // region 可选
         // 1. 关联查询用户信息
         Set<Long> userIdSet = appList.stream().map(App::getUserId).collect(Collectors.toSet());
         Map<Long, List<User>> userIdUserListMap = userService.listByIds(userIdSet).stream()
                 .collect(Collectors.groupingBy(User::getId));
-        // 2. 已登录，获取用户点赞、收藏状态
-        Map<Long, Boolean> appIdHasThumbMap = new HashMap<>();
-        Map<Long, Boolean> appIdHasFavourMap = new HashMap<>();
-        User loginUser = userService.getLoginUserPermitNull(request);
-        if (loginUser != null) {
-            Set<Long> appIdSet = appList.stream().map(App::getId).collect(Collectors.toSet());
-            loginUser = userService.getLoginUser(request);
-            // 获取点赞
-            QueryWrapper<AppThumb> appThumbQueryWrapper = new QueryWrapper<>();
-            appThumbQueryWrapper.in("appId", appIdSet);
-            appThumbQueryWrapper.eq("userId", loginUser.getId());
-            List<AppThumb> appAppThumbList = appThumbMapper.selectList(appThumbQueryWrapper);
-            appAppThumbList.forEach(appAppThumb -> appIdHasThumbMap.put(appAppThumb.getAppId(), true));
-            // 获取收藏
-            QueryWrapper<AppFavour> appFavourQueryWrapper = new QueryWrapper<>();
-            appFavourQueryWrapper.in("appId", appIdSet);
-            appFavourQueryWrapper.eq("userId", loginUser.getId());
-            List<AppFavour> appFavourList = appFavourMapper.selectList(appFavourQueryWrapper);
-            appFavourList.forEach(appFavour -> appIdHasFavourMap.put(appFavour.getAppId(), true));
-        }
-        // 填充信息
+        //填充信息
         appVOList.forEach(appVO -> {
             Long userId = appVO.getUserId();
             User user = null;
-            if (userIdUserListMap.containsKey(userId)) {
-                user = userIdUserListMap.get(userId).get(0);
+            if(userIdUserListMap.containsKey(userId)){
+                user= userIdUserListMap.get(userId).get(0);
             }
             appVO.setUser(userService.getUserVO(user));
-            appVO.setHasThumb(appIdHasThumbMap.getOrDefault(appVO.getId(), false));
-            appVO.setHasFavour(appIdHasFavourMap.getOrDefault(appVO.getId(), false));
-        });
-        // endregion
+                });
 
         appVOPage.setRecords(appVOList);
         return appVOPage;
     }
-
 }

@@ -1,5 +1,6 @@
 package com.cf.smartq.controller;
 
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cf.smartq.annotation.AuthCheck;
 import com.cf.smartq.common.BaseResponse;
@@ -9,10 +10,7 @@ import com.cf.smartq.common.ResultUtils;
 import com.cf.smartq.constant.UserConstant;
 import com.cf.smartq.exception.BusinessException;
 import com.cf.smartq.exception.ThrowUtils;
-import com.cf.smartq.model.dto.question.QuestionAddRequest;
-import com.cf.smartq.model.dto.question.QuestionEditRequest;
-import com.cf.smartq.model.dto.question.QuestionQueryRequest;
-import com.cf.smartq.model.dto.question.QuestionUpdateRequest;
+import com.cf.smartq.model.dto.question.*;
 import com.cf.smartq.model.entity.Question;
 import com.cf.smartq.model.entity.User;
 import com.cf.smartq.model.vo.QuestionVO;
@@ -52,9 +50,11 @@ public class QuestionController {
     @PostMapping("/add")
     public BaseResponse<Long> addQuestion(@RequestBody QuestionAddRequest questionAddRequest, HttpServletRequest request) {
         ThrowUtils.throwIf(questionAddRequest == null, ErrorCode.PARAMS_ERROR);
-        // todo 在此处将实体类和 DTO 进行转换
+        // 将实体类和 DTO 进行转换
         Question question = new Question();
         BeanUtils.copyProperties(questionAddRequest, question);
+        QuestionContent questionContent = questionAddRequest.getQuestionContent();
+        question.setQuestionContent(JSONUtil.toJsonStr(questionContent));
         // 数据校验
         questionService.validQuestion(question, true);
         // todo 填充默认值
