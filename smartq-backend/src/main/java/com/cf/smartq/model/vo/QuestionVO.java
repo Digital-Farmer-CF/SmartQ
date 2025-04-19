@@ -54,6 +54,12 @@ public class QuestionVO implements Serializable {
          */
         private String appName;
 
+
+    /**
+     * 创建用户 id
+     */
+     private Long userId;
+
 //    /**
 //     * 封装类转对象
 //     *
