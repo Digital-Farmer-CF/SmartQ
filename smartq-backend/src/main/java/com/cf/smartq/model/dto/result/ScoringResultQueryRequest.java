@@ -49,4 +49,6 @@ public class ScoringResultQueryRequest extends PageRequest implements Serializab
      */
     private Long userId;
 
+    private String searchText;  // 新添加的搜索字段
+
 }

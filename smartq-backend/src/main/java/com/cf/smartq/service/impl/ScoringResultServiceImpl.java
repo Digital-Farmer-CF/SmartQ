@@ -23,10 +23,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -50,17 +47,44 @@ public class ScoringResultServiceImpl extends ServiceImpl<ScoringResultMapper, S
     @Override
     public void validScoringResult(ScoringResult scoringresult, boolean add) {
         ThrowUtils.throwIf(scoringresult == null, ErrorCode.PARAMS_ERROR);
-        // todo 从对象中取值
-        String title = scoringresult.getTitle();
-        // 创建数据时，参数不能为空
+        // 从对象中取值
+        Long appId = scoringresult.getAppId();
+        Date createTime = scoringresult.getCreateTime();
+        String resultProp = scoringresult.getResultProp();
+        Integer resultScoreRange = scoringresult.getResultScoreRange();
+        Date updateTime = scoringresult.getUpdateTime();
+        Long userId = scoringresult.getUserId();
+
+        // 创建时必填项校验
         if (add) {
-            // todo 补充校验规则
-            ThrowUtils.throwIf(StringUtils.isBlank(title), ErrorCode.PARAMS_ERROR);
+            ThrowUtils.throwIf(StringUtils.isBlank(String.valueOf(appId)), ErrorCode.PARAMS_ERROR, "应用名不能为空");
+            ThrowUtils.throwIf(StringUtils.isBlank(resultProp), ErrorCode.PARAMS_ERROR, "评分结果不能为空");
+            ThrowUtils.throwIf(StringUtils.isBlank(String.valueOf(userId)), ErrorCode.PARAMS_ERROR, "用户id不能为空");
+            ThrowUtils.throwIf(StringUtils.isBlank(String.valueOf(resultScoreRange)), ErrorCode.PARAMS_ERROR, "评分结果不能为空");
         }
-        // 修改数据时，有参数则校验
-        // todo 补充校验规则
-        if (StringUtils.isNotBlank(title)) {
-            ThrowUtils.throwIf(title.length() > 80, ErrorCode.PARAMS_ERROR, "标题过长");
+
+        // 公共校验（无论新增或修改）
+        // 校验 resultProp 的长度
+        if (StringUtils.isNotBlank(resultProp)) {
+            ThrowUtils.throwIf(resultProp.length() > 200, ErrorCode.PARAMS_ERROR, "评分结果长度不能超过200字符");
+        }
+
+        // 校验 resultScoreRange 是否在合理范围内
+        if (resultScoreRange != null) {
+            ThrowUtils.throwIf(resultScoreRange < 0 || resultScoreRange > 100, ErrorCode.PARAMS_ERROR, "评分结果范围必须在 0 到 100 之间");
+        }
+
+        // 校验创建时间和更新时间是否为空（假设它们不应该为空）
+        if (createTime == null) {
+            ThrowUtils.throwIf(true, ErrorCode.PARAMS_ERROR, "创建时间不能为空");
+        }
+        if (updateTime == null) {
+            ThrowUtils.throwIf(true, ErrorCode.PARAMS_ERROR, "更新时间不能为空");
+        }
+
+        // 校验时间的合理性（假设更新时间不能早于创建时间）
+        if (updateTime != null && createTime != null) {
+            ThrowUtils.throwIf(updateTime.before(createTime), ErrorCode.PARAMS_ERROR, "更新时间不能早于创建时间");
         }
     }
 
@@ -78,37 +102,33 @@ public class ScoringResultServiceImpl extends ServiceImpl<ScoringResultMapper, S
         }
         // todo 从对象中取值
         Long id = scoringresultQueryRequest.getId();
-        Long notId = scoringresultQueryRequest.getNotId();
-        String title = scoringresultQueryRequest.getTitle();
-        String content = scoringresultQueryRequest.getContent();
-        String searchText = scoringresultQueryRequest.getSearchText();
-        String sortField = scoringresultQueryRequest.getSortField();
-        String sortOrder = scoringresultQueryRequest.getSortOrder();
-        List<String> tagList = scoringresultQueryRequest.getTags();
+        String resultName = scoringresultQueryRequest.getResultName();
+        String resultDesc = scoringresultQueryRequest.getResultDesc();
+        Integer resultScoreRange = scoringresultQueryRequest.getResultScoreRange();
+        Long appId = scoringresultQueryRequest.getAppId();
         Long userId = scoringresultQueryRequest.getUserId();
+        String searchText = scoringresultQueryRequest.getSearchText();
         // todo 补充需要的查询条件
-        // 从多字段中搜索
+        // 从多字段中搜索（例如搜索标题和内容）
         if (StringUtils.isNotBlank(searchText)) {
-            // 需要拼接查询条件
-            queryWrapper.and(qw -> qw.like("title", searchText).or().like("content", searchText));
+            queryWrapper.and(qw -> qw.like("resultName", searchText).or().like("resultDesc", searchText));
         }
+
         // 模糊查询
-        queryWrapper.like(StringUtils.isNotBlank(title), "title", title);
-        queryWrapper.like(StringUtils.isNotBlank(content), "content", content);
-        // JSON 数组查询
-        if (CollUtil.isNotEmpty(tagList)) {
-            for (String tag : tagList) {
-                queryWrapper.like("tags", "\"" + tag + "\"");
-            }
+        queryWrapper.like(StringUtils.isNotBlank(resultName), "resultName", resultName);
+        queryWrapper.like(StringUtils.isNotBlank(resultDesc), "resultDesc", resultDesc);
+        
+        
+
+        // 精确查询，检查传入的字段值是否为空
+        queryWrapper.eq(ObjectUtils.isNotEmpty(id), "id", id);  // 精确匹配 id
+        queryWrapper.eq(ObjectUtils.isNotEmpty(userId), "userId", userId);  // 精确匹配 userId
+        queryWrapper.eq(ObjectUtils.isNotEmpty(appId), "appId", appId);  // 精确匹配 appId
+        // 评分结果范围的查询
+        if (resultScoreRange != null) {
+            queryWrapper.eq("resultScoreRange", resultScoreRange);
         }
-        // 精确查询
-        queryWrapper.ne(ObjectUtils.isNotEmpty(notId), "id", notId);
-        queryWrapper.eq(ObjectUtils.isNotEmpty(id), "id", id);
-        queryWrapper.eq(ObjectUtils.isNotEmpty(userId), "userId", userId);
-        // 排序规则
-        queryWrapper.orderBy(SqlUtils.validSortField(sortField),
-                sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
-                sortField);
+
         return queryWrapper;
     }
 
@@ -123,9 +143,6 @@ public class ScoringResultServiceImpl extends ServiceImpl<ScoringResultMapper, S
     public ScoringResultVO getScoringResultVO(ScoringResult scoringresult, HttpServletRequest request) {
         // 对象转封装类
         ScoringResultVO scoringresultVO = ScoringResultVO.objToVo(scoringresult);
-
-        // todo 可以根据需要为封装对象补充值，不需要的内容可以删除
-        // region 可选
         // 1. 关联查询用户信息
         Long userId = scoringresult.getUserId();
         User user = null;
@@ -133,26 +150,7 @@ public class ScoringResultServiceImpl extends ServiceImpl<ScoringResultMapper, S
             user = userService.getById(userId);
         }
         UserVO userVO = userService.getUserVO(user);
-        scoringresultVO.setUser(userVO);
-        // 2. 已登录，获取用户点赞、收藏状态
-        long scoringresultId = scoringresult.getId();
-        User loginUser = userService.getLoginUserPermitNull(request);
-        if (loginUser != null) {
-            // 获取点赞
-            QueryWrapper<ScoringResultThumb> scoringresultThumbQueryWrapper = new QueryWrapper<>();
-            scoringresultThumbQueryWrapper.in("scoringresultId", scoringresultId);
-            scoringresultThumbQueryWrapper.eq("userId", loginUser.getId());
-            ScoringResultThumb scoringresultThumb = scoringresultThumbMapper.selectOne(scoringresultThumbQueryWrapper);
-            scoringresultVO.setHasThumb(scoringresultThumb != null);
-            // 获取收藏
-            QueryWrapper<ScoringResultFavour> scoringresultFavourQueryWrapper = new QueryWrapper<>();
-            scoringresultFavourQueryWrapper.in("scoringresultId", scoringresultId);
-            scoringresultFavourQueryWrapper.eq("userId", loginUser.getId());
-            ScoringResultFavour scoringresultFavour = scoringresultFavourMapper.selectOne(scoringresultFavourQueryWrapper);
-            scoringresultVO.setHasFavour(scoringresultFavour != null);
-        }
-        // endregion
-
+        scoringresultVO.setUserVO(userVO);
         return scoringresultVO;
     }
 
@@ -174,33 +172,11 @@ public class ScoringResultServiceImpl extends ServiceImpl<ScoringResultMapper, S
         List<ScoringResultVO> scoringresultVOList = scoringresultList.stream().map(scoringresult -> {
             return ScoringResultVO.objToVo(scoringresult);
         }).collect(Collectors.toList());
-
-        // todo 可以根据需要为封装对象补充值，不需要的内容可以删除
-        // region 可选
         // 1. 关联查询用户信息
         Set<Long> userIdSet = scoringresultList.stream().map(ScoringResult::getUserId).collect(Collectors.toSet());
         Map<Long, List<User>> userIdUserListMap = userService.listByIds(userIdSet).stream()
                 .collect(Collectors.groupingBy(User::getId));
-        // 2. 已登录，获取用户点赞、收藏状态
-        Map<Long, Boolean> scoringresultIdHasThumbMap = new HashMap<>();
-        Map<Long, Boolean> scoringresultIdHasFavourMap = new HashMap<>();
-        User loginUser = userService.getLoginUserPermitNull(request);
-        if (loginUser != null) {
-            Set<Long> scoringresultIdSet = scoringresultList.stream().map(ScoringResult::getId).collect(Collectors.toSet());
-            loginUser = userService.getLoginUser(request);
-            // 获取点赞
-            QueryWrapper<ScoringResultThumb> scoringresultThumbQueryWrapper = new QueryWrapper<>();
-            scoringresultThumbQueryWrapper.in("scoringresultId", scoringresultIdSet);
-            scoringresultThumbQueryWrapper.eq("userId", loginUser.getId());
-            List<ScoringResultThumb> scoringresultScoringResultThumbList = scoringresultThumbMapper.selectList(scoringresultThumbQueryWrapper);
-            scoringresultScoringResultThumbList.forEach(scoringresultScoringResultThumb -> scoringresultIdHasThumbMap.put(scoringresultScoringResultThumb.getScoringResultId(), true));
-            // 获取收藏
-            QueryWrapper<ScoringResultFavour> scoringresultFavourQueryWrapper = new QueryWrapper<>();
-            scoringresultFavourQueryWrapper.in("scoringresultId", scoringresultIdSet);
-            scoringresultFavourQueryWrapper.eq("userId", loginUser.getId());
-            List<ScoringResultFavour> scoringresultFavourList = scoringresultFavourMapper.selectList(scoringresultFavourQueryWrapper);
-            scoringresultFavourList.forEach(scoringresultFavour -> scoringresultIdHasFavourMap.put(scoringresultFavour.getScoringResultId(), true));
-        }
+
         // 填充信息
         scoringresultVOList.forEach(scoringresultVO -> {
             Long userId = scoringresultVO.getUserId();
@@ -208,11 +184,8 @@ public class ScoringResultServiceImpl extends ServiceImpl<ScoringResultMapper, S
             if (userIdUserListMap.containsKey(userId)) {
                 user = userIdUserListMap.get(userId).get(0);
             }
-            scoringresultVO.setUser(userService.getUserVO(user));
-            scoringresultVO.setHasThumb(scoringresultIdHasThumbMap.getOrDefault(scoringresultVO.getId(), false));
-            scoringresultVO.setHasFavour(scoringresultIdHasFavourMap.getOrDefault(scoringresultVO.getId(), false));
+            scoringresultVO.setUserVO(userService.getUserVO(user));
         });
-        // endregion
 
         scoringresultVOPage.setRecords(scoringresultVOList);
         return scoringresultVOPage;

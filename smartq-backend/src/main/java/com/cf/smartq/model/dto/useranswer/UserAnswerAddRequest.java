@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 创建用户回答请求
@@ -16,7 +17,7 @@ import java.util.Date;
 @Data
 public class UserAnswerAddRequest implements Serializable {
     /**
-     *忘记这个id是干嘛的了 TODO
+     *用户回答id
      */
     @TableId(type = IdType.ASSIGN_ID)
     private Long id;
@@ -39,7 +40,7 @@ public class UserAnswerAddRequest implements Serializable {
     /**
      * 用户答案（JSON 数组）
      */
-    private String choices;
+    private List<String> choices;
 
     /**
      * 评分结果 id

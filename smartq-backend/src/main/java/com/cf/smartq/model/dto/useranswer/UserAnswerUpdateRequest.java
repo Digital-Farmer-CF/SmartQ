@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 更新用户回答请求
@@ -26,6 +27,11 @@ public class UserAnswerUpdateRequest implements Serializable {
      * 更新时间
      */
     private Date updateTime;
+
+    /**
+     * 用户答案（JSON 数组）
+     */
+    private List<String> choices;
 
     /**
      * 是否删除

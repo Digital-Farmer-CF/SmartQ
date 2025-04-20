@@ -1,5 +1,6 @@
 package com.cf.smartq.controller;
 
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cf.smartq.annotation.AuthCheck;
 import com.cf.smartq.common.BaseResponse;
@@ -13,8 +14,8 @@ import com.cf.smartq.model.dto.useranswer.UserAnswerAddRequest;
 import com.cf.smartq.model.dto.useranswer.UserAnswerEditRequest;
 import com.cf.smartq.model.dto.useranswer.UserAnswerQueryRequest;
 import com.cf.smartq.model.dto.useranswer.UserAnswerUpdateRequest;
-import com.cf.smartq.model.entity.UserAnswer;
 import com.cf.smartq.model.entity.User;
+import com.cf.smartq.model.entity.UserAnswer;
 import com.cf.smartq.model.vo.UserAnswerVO;
 import com.cf.smartq.service.UserAnswerService;
 import com.cf.smartq.service.UserService;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * 用户回答接口
@@ -52,12 +54,14 @@ public class UserAnswerController {
     @PostMapping("/add")
     public BaseResponse<Long> addUserAnswer(@RequestBody UserAnswerAddRequest useranswerAddRequest, HttpServletRequest request) {
         ThrowUtils.throwIf(useranswerAddRequest == null, ErrorCode.PARAMS_ERROR);
-        // todo 在此处将实体类和 DTO 进行转换
+        // 在此处将实体类和 DTO 进行转换
         UserAnswer useranswer = new UserAnswer();
         BeanUtils.copyProperties(useranswerAddRequest, useranswer);
+        List<String> choices = useranswerAddRequest.getChoices();
+        useranswer.setChoices(JSONUtil.toJsonStr(choices));
         // 数据校验
         useranswerService.validUserAnswer(useranswer, true);
-        // todo 填充默认值
+        // 充默认值
         User loginUser = userService.getLoginUser(request);
         useranswer.setUserId(loginUser.getId());
         // 写入数据库
@@ -107,9 +111,11 @@ public class UserAnswerController {
         if (useranswerUpdateRequest == null || useranswerUpdateRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        // todo 在此处将实体类和 DTO 进行转换
+        // 此处将实体类和 DTO 进行转换
         UserAnswer useranswer = new UserAnswer();
         BeanUtils.copyProperties(useranswerUpdateRequest, useranswer);
+        List<String> choices = useranswerUpdateRequest.getChoices();
+        useranswer.setChoices(JSONUtil.toJsonStr(choices));
         // 数据校验
         useranswerService.validUserAnswer(useranswer, false);
         // 判断是否存在
@@ -213,9 +219,11 @@ public class UserAnswerController {
         if (useranswerEditRequest == null || useranswerEditRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        // todo 在此处将实体类和 DTO 进行转换
+        //在此处将实体类和 DTO 进行转换
         UserAnswer useranswer = new UserAnswer();
         BeanUtils.copyProperties(useranswerEditRequest, useranswer);
+        List<String> choices = useranswerEditRequest.getChoices();
+        useranswer.setChoices(JSONUtil.toJsonStr(choices));
         // 数据校验
         useranswerService.validUserAnswer(useranswer, false);
         User loginUser = userService.getLoginUser(request);

@@ -9,6 +9,7 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 查询用户回答请求
@@ -42,7 +43,7 @@ public class UserAnswerQueryRequest extends PageRequest implements Serializable 
     /**
      * 用户答案（JSON 数组）
      */
-    private String choices;
+    private List<String> choices;
 
     /**
      * 评分结果 id
