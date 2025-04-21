@@ -62,7 +62,6 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
         if (add) {
             ThrowUtils.throwIf(StringUtils.isBlank(appName), ErrorCode.PARAMS_ERROR, "应用名不能为空");
             ThrowUtils.throwIf(StringUtils.isBlank(appDesc), ErrorCode.PARAMS_ERROR, "应用描述不能为空");
-            ThrowUtils.throwIf(StringUtils.isBlank(appIcon), ErrorCode.PARAMS_ERROR, "应用图标不能为空");
             ThrowUtils.throwIf(appType == null, ErrorCode.PARAMS_ERROR, "应用类型不能为空");
             ThrowUtils.throwIf(scoringStrategy == null, ErrorCode.PARAMS_ERROR, "评分策略不能为空");
         }

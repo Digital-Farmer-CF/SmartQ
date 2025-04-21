@@ -38,10 +38,10 @@ public class UserRegisterRequest implements Serializable {
      */
     private String unionId;
 
-    /**
-     * 公众号openId
-     */
-    private String mpOpenId;
+//    /**
+//     * 公众号openId
+//     */
+//    private String mpOpenId;
 
     /**
      * 用户昵称
@@ -74,6 +74,10 @@ public class UserRegisterRequest implements Serializable {
     @TableLogic
     private Integer isDelete;
 
+    /**
+     * 确认密码
+     */
+    private String CheckPassword;
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

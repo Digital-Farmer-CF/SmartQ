@@ -58,7 +58,7 @@ public class UserController {
     @Resource
     private WxOpenConfig wxOpenConfig;
 
-    // region 登录相关
+
 
     /**
      * 用户注册
@@ -74,10 +74,20 @@ public class UserController {
         String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
-        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
+        String userRole = userRegisterRequest.getUserRole();
+        String userName = userRegisterRequest.getUserName();
+
+        // 检查账户、密码或确认密码是否为空
+        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword,userRole)) {
             return null;
         }
-        long result = userService.userRegister(userAccount, userPassword, checkPassword);
+
+        // 检查密码和确认密码是否一致
+        if (!userPassword.equals(checkPassword)) {
+            return ResultUtils.error(ErrorCode.PARAMS_ERROR, "两次密码输入不一致");
+        }
+        // 调用服务层进行用户注册
+        long result = userService.userRegister(userAccount, userPassword, checkPassword,userRole,userName);
         return ResultUtils.success(result);
     }
 

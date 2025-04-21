@@ -18,6 +18,7 @@ import com.cf.smartq.model.entity.User;
 import com.cf.smartq.model.vo.AppVO;
 import com.cf.smartq.service.AppService;
 import com.cf.smartq.service.UserService;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping("/app")
 @Slf4j
+@ApiOperation(value = "应用接口")
 public class AppController {
 
     @Resource
@@ -50,6 +52,7 @@ public class AppController {
      * @return
      */
     @PostMapping("/add")
+    @ApiOperation(value = "创建应用")
     public BaseResponse<Long> addApp(@RequestBody AppAddRequest appAddRequest, HttpServletRequest request) {
         ThrowUtils.throwIf(appAddRequest == null, ErrorCode.PARAMS_ERROR);
         // 将实体类和 DTO 进行转换
@@ -76,6 +79,7 @@ public class AppController {
      * @return
      */
     @PostMapping("/delete")
+    @ApiOperation(value = "删除应用")
     public BaseResponse<Boolean> deleteApp(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -103,6 +107,7 @@ public class AppController {
      */
     @PostMapping("/update")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @ApiOperation(value = "更新应用")
     public BaseResponse<Boolean> updateApp(@RequestBody AppUpdateRequest appUpdateRequest) {
         if (appUpdateRequest == null || appUpdateRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -129,6 +134,7 @@ public class AppController {
      * @return
      */
     @GetMapping("/get/vo")
+    @ApiOperation(value = "根据id查询应用")
     public BaseResponse<AppVO> getAppVOById(long id, HttpServletRequest request) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
         // 查询数据库
@@ -146,6 +152,7 @@ public class AppController {
      */
     @PostMapping("/list/page")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @ApiOperation(value = "(管理员)分页查询应用")
     public BaseResponse<Page<App>> listAppByPage(@RequestBody AppQueryRequest appQueryRequest) {
         long current = appQueryRequest.getCurrent();
         long size = appQueryRequest.getPageSize();
@@ -163,6 +170,7 @@ public class AppController {
      * @return
      */
     @PostMapping("/list/page/vo")
+    @ApiOperation(value = "分页查询应用")
     public BaseResponse<Page<AppVO>> listAppVOByPage(@RequestBody AppQueryRequest appQueryRequest,
                                                                HttpServletRequest request) {
         long current = appQueryRequest.getCurrent();
@@ -184,6 +192,7 @@ public class AppController {
      * @return
      */
     @PostMapping("/my/list/page/vo")
+    @ApiOperation(value = "分页查询当前登录用户的应用")
     public BaseResponse<Page<AppVO>> listMyAppVOByPage(@RequestBody AppQueryRequest appQueryRequest,
                                                                  HttpServletRequest request) {
         ThrowUtils.throwIf(appQueryRequest == null, ErrorCode.PARAMS_ERROR);
@@ -209,11 +218,12 @@ public class AppController {
      * @return
      */
     @PostMapping("/edit")
+    @ApiOperation(value = "编辑应用")
     public BaseResponse<Boolean> editApp(@RequestBody AppEditRequest appEditRequest, HttpServletRequest request) {
         if (appEditRequest == null || appEditRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        // todo 在此处将实体类和 DTO 进行转换
+        // 在此处将实体类和 DTO 进行转换
         App app = new App();
         BeanUtils.copyProperties(appEditRequest, app);
         // 数据校验

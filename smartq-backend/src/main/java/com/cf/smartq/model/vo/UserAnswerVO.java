@@ -74,6 +74,10 @@ public class UserAnswerVO implements Serializable {
      * 创建时间
      */
     private Date createTime;
+
+    private  UserVO userVO;
+
+    private  Long userId;
 //
 //    /**
 //     * 封装类转对象

@@ -20,7 +20,7 @@ import java.util.List;
 @Data
 public class UserAnswerQueryRequest extends PageRequest implements Serializable {
     /**
-     *忘记这个id是干嘛的了 TODO
+     *回答id
      */
     @TableId(type = IdType.ASSIGN_ID)
     private Long id;
@@ -89,6 +89,8 @@ public class UserAnswerQueryRequest extends PageRequest implements Serializable 
      * 是否删除
      */
     private Integer isDelete;
+
+    private String searchText;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
