@@ -15,7 +15,7 @@ import java.util.Date;
 @Data
 public class QuestionAddRequest implements Serializable {
     /**
-     * id
+     * 问题的编号
      */
     @TableId(type = IdType.ASSIGN_ID)
     private Long id;

@@ -93,7 +93,7 @@ public class UserAnswerServiceImpl extends ServiceImpl<UserAnswerMapper, UserAns
         if (useranswerQueryRequest == null) {
             return queryWrapper;
         }
-        // todo 从对象中取值
+        // 从对象中取值
         Long id = useranswerQueryRequest.getId();
         Integer appType = useranswerQueryRequest.getAppType();
         Integer scoringStrategy = useranswerQueryRequest.getScoringStrategy();

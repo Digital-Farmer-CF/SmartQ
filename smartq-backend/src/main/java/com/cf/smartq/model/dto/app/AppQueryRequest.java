@@ -92,12 +92,6 @@ public class AppQueryRequest extends PageRequest implements Serializable {
 
 
     /**
-     * 排除的 id
-     * 用于在查询时排除某个特定的应用 id
-     */
-    private Long notId;
-
-    /**
      * 是否删除
      */
     private Integer isDelete;

@@ -16,6 +16,7 @@ import com.cf.smartq.model.entity.User;
 import com.cf.smartq.model.vo.QuestionVO;
 import com.cf.smartq.service.QuestionService;
 import com.cf.smartq.service.UserService;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -48,6 +49,7 @@ public class QuestionController {
      * @return
      */
     @PostMapping("/add")
+    @ApiOperation(value = "创建问题")
     public BaseResponse<Long> addQuestion(@RequestBody QuestionAddRequest questionAddRequest, HttpServletRequest request) {
         ThrowUtils.throwIf(questionAddRequest == null, ErrorCode.PARAMS_ERROR);
         // 将实体类和 DTO 进行转换
@@ -76,6 +78,7 @@ public class QuestionController {
      * @return
      */
     @PostMapping("/delete")
+    @ApiOperation(value = "删除问题")
     public BaseResponse<Boolean> deleteQuestion(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -103,6 +106,7 @@ public class QuestionController {
      */
     @PostMapping("/update")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @ApiOperation(value = "更新问题")
     public BaseResponse<Boolean> updateQuestion(@RequestBody QuestionUpdateRequest questionUpdateRequest) {
         if (questionUpdateRequest == null || questionUpdateRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -129,6 +133,7 @@ public class QuestionController {
      * @return
      */
     @GetMapping("/get/vo")
+    @ApiOperation(value = "根据id获取问题")
     public BaseResponse<QuestionVO> getQuestionVOById(long id, HttpServletRequest request) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
         // 查询数据库
@@ -146,6 +151,7 @@ public class QuestionController {
      */
     @PostMapping("/list/page")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @ApiOperation(value = "分页获取问题列表(管理员)")
     public BaseResponse<Page<Question>> listQuestionByPage(@RequestBody QuestionQueryRequest questionQueryRequest) {
         long current = questionQueryRequest.getCurrent();
         long size = questionQueryRequest.getPageSize();
@@ -163,6 +169,7 @@ public class QuestionController {
      * @return
      */
     @PostMapping("/list/page/vo")
+    @ApiOperation(value = "分页获取问题列表")
     public BaseResponse<Page<QuestionVO>> listQuestionVOByPage(@RequestBody QuestionQueryRequest questionQueryRequest,
                                                                HttpServletRequest request) {
         long current = questionQueryRequest.getCurrent();
@@ -184,6 +191,7 @@ public class QuestionController {
      * @return
      */
     @PostMapping("/my/list/page/vo")
+    @ApiOperation(value = "分页获取当前登录用户创建的问题列表")
     public BaseResponse<Page<QuestionVO>> listMyQuestionVOByPage(@RequestBody QuestionQueryRequest questionQueryRequest,
                                                                  HttpServletRequest request) {
         ThrowUtils.throwIf(questionQueryRequest == null, ErrorCode.PARAMS_ERROR);
@@ -209,6 +217,7 @@ public class QuestionController {
      * @return
      */
     @PostMapping("/edit")
+    @ApiOperation(value = "编辑问题")
     public BaseResponse<Boolean> editQuestion(@RequestBody QuestionEditRequest questionEditRequest, HttpServletRequest request) {
         if (questionEditRequest == null || questionEditRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);

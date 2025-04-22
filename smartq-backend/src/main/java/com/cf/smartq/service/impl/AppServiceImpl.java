@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cf.smartq.common.ErrorCode;
-import com.cf.smartq.constant.CommonConstant;
 import com.cf.smartq.exception.ThrowUtils;
 import com.cf.smartq.mapper.AppMapper;
 import com.cf.smartq.model.dto.app.AppQueryRequest;
@@ -15,7 +14,6 @@ import com.cf.smartq.model.vo.AppVO;
 import com.cf.smartq.model.vo.UserVO;
 import com.cf.smartq.service.AppService;
 import com.cf.smartq.service.UserService;
-import com.cf.smartq.utils.SqlUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -23,12 +21,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.lang.reflect.Field;
 /**
  * 应用服务实现
  *
@@ -103,59 +97,47 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
             return queryWrapper;
         }
 
-        // 获取所有字段并逐个添加查询条件
-        Field[] fields = appQueryRequest.getClass().getDeclaredFields();
+        // 获取查询条件字段
+        Long id = appQueryRequest.getId();
+        String appName = appQueryRequest.getAppName();
+        String appDesc = appQueryRequest.getAppDesc();
+        Integer appType = appQueryRequest.getAppType();
+        Integer scoringStrategy = appQueryRequest.getScoringStrategy();
+        Integer reviewStatus = appQueryRequest.getReviewStatus();
+        String reviewMessage = appQueryRequest.getReviewMessage();
+        Long reviewerId = appQueryRequest.getReviewerId();
+        Date reviewTime = appQueryRequest.getReviewTime();
+        Long userId = appQueryRequest.getUserId();
+        Date createTime = appQueryRequest.getCreateTime();
+        Date updateTime = appQueryRequest.getUpdateTime();
 
-        // 遍历字段并添加查询条件
-        for (Field field : fields) {
-            field.setAccessible(true);  // 使字段可以访问
-            try {
-                Object fieldValue = field.get(appQueryRequest);  // 获取字段的值
 
-                if (fieldValue != null && !"".equals(fieldValue)) {
-                    String fieldName = field.getName();  // 获取字段名
+        // 模糊查询
+        queryWrapper.like(StringUtils.isNotBlank(appName), "appName", appName);
+        queryWrapper.like(StringUtils.isNotBlank(appDesc), "appDesc", appDesc);
 
-                    // 根据字段类型设置查询条件
-                    if (fieldValue instanceof String) {
-                        queryWrapper.like(fieldName, fieldValue);  // 字符串字段用模糊查询
-                    } else if (fieldValue instanceof Long || fieldValue instanceof Integer) {
-                        queryWrapper.eq(fieldName, fieldValue);  // Long 和 Integer 类型字段用精确查询
-                    } else if (fieldValue instanceof List) {
-                        // 对于 List 类型字段，使用 "in" 查询
-                        List<?> list = (List<?>) fieldValue;
-                        if (!list.isEmpty()) {
-                            queryWrapper.in(fieldName, list);
-                        }
-                    } else if (fieldValue instanceof Object) {
-                        queryWrapper.eq(fieldName, fieldValue);  // 对于其他对象类型使用精确查询
-                    }
-                }
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
+
+        // 精确查询
+        queryWrapper.eq(ObjectUtils.isNotEmpty(appType), "appType", appType);  // 等于
+        queryWrapper.eq(ObjectUtils.isNotEmpty(scoringStrategy), "scoringStrategy", scoringStrategy);  // 等于
+        queryWrapper.eq(ObjectUtils.isNotEmpty(reviewStatus), "reviewStatus", reviewStatus);  // 应用id（精确查询）
+        queryWrapper.eq(ObjectUtils.isNotEmpty(reviewMessage), "reviewMessage", reviewMessage);  // 应用id（精确查询）
+        queryWrapper.eq(Objects.nonNull(reviewerId), "reviewerId", reviewerId);  // 应用id（精确查询）
+        queryWrapper.eq(Objects.nonNull(userId), "userId", userId);  // 应用id（精确查询）
+        queryWrapper.eq(Objects.nonNull(id), "id", id);  // 应用id（精确查询）
+
+
+        // 日期范围查询（创建时间和更新时间）
+        if (reviewTime != null) {
+            queryWrapper.ge("createTime", createTime);  // 大于等于创建时间
+        }
+        if (updateTime != null) {
+            queryWrapper.le("updateTime", updateTime);  // 小于等于更新时间
         }
 
-        // 从多字段中搜索 (搜索标题和内容)
-        if (StringUtils.isNotBlank(appQueryRequest.getSearchText())) {
-            queryWrapper.and(qw -> qw.like("title", appQueryRequest.getSearchText())
-                    .or().like("content", appQueryRequest.getSearchText()));
-        }
-
-        // 排除某个 id
-        if (ObjectUtils.isNotEmpty(appQueryRequest.getNotId())) {
-            queryWrapper.ne("id", appQueryRequest.getNotId());
-        }
-
-        // 排序规则
-        String sortField = appQueryRequest.getSortField();
-        String sortOrder = appQueryRequest.getSortOrder();
-        if (StringUtils.isNotBlank(sortField)) {
-            queryWrapper.orderBy(SqlUtils.validSortField(sortField),
-                    sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
-                    sortField);
-        }
 
         return queryWrapper;
+
     }
 
     /**
