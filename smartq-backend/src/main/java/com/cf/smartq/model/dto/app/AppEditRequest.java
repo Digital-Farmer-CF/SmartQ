@@ -27,6 +27,11 @@ public class AppEditRequest implements Serializable {
     private String appName;
 
     /**
+     * 应用id
+     */
+    private String appId;
+
+    /**
      * 应用描述
      */
     private String appDesc;

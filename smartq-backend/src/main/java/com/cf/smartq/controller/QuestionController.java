@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * 问题接口
@@ -222,18 +223,25 @@ public class QuestionController {
         if (questionEditRequest == null || questionEditRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        // todo 在此处将实体类和 DTO 进行转换
+        // 1. 获取当前登录用户
+        User loginUser = userService.getLoginUser(request);
+        Long userId = loginUser.getId();
+
+        // 在此处将实体类和 DTO 进行转换
         Question question = new Question();
         BeanUtils.copyProperties(questionEditRequest, question);
+        QuestionContent questionContent = questionEditRequest.getQuestionContent();
+        question.setQuestionContent(JSONUtil.toJsonStr(questionContent));
+        // 3. 设置 userId
+        question.setUserId(userId);
         // 数据校验
         questionService.validQuestion(question, false);
-        User loginUser = userService.getLoginUser(request);
         // 判断是否存在
         long id = questionEditRequest.getId();
         Question oldQuestion = questionService.getById(id);
         ThrowUtils.throwIf(oldQuestion == null, ErrorCode.NOT_FOUND_ERROR);
         // 仅本人或管理员可编辑
-        if (!oldQuestion.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
+        if (!oldQuestion.getUserId().equals(loginUser.getId())) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
         // 操作数据库

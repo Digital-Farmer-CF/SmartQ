@@ -67,16 +67,6 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         // 校验用户 ID 必须有效
         Long userId = question.getUserId();
         ThrowUtils.throwIf(userId == null || userId <= 0, ErrorCode.PARAMS_ERROR, "用户 ID 无效");
-
-        // 校验创建时间
-        if (question.getCreateTime() == null) {
-            ThrowUtils.throwIf(true, ErrorCode.PARAMS_ERROR, "创建时间不能为空");
-        }
-
-        // 校验更新时间
-        if (question.getUpdateTime() == null) {
-            ThrowUtils.throwIf(true, ErrorCode.PARAMS_ERROR, "更新时间不能为空");
-        }
     }
 
     /**
@@ -100,9 +90,6 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         Date updateTime = questionQueryRequest.getUpdateTime();
         QuestionContent questionContent = questionQueryRequest.getQuestionContent();  // 假设这是一个对象，可能需要转换为 JSON 字符串
 
-        // 模糊查询
-        String questionContentStr = questionContent.toString();
-        queryWrapper.like(StringUtils.isNotBlank(questionContentStr), "questionContent", questionContentStr);
 
 
         // 精确查询

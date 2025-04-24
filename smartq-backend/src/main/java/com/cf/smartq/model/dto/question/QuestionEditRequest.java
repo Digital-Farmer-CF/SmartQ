@@ -29,4 +29,10 @@ public class QuestionEditRequest implements Serializable {
      */
     private Date updateTime;
 
+    /**
+     * 应用id
+     */
+    private Long appId;
+
+
 }
