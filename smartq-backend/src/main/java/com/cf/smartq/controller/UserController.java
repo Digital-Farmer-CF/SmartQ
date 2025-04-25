@@ -10,22 +10,12 @@ import com.cf.smartq.config.WxOpenConfig;
 import com.cf.smartq.constant.UserConstant;
 import com.cf.smartq.exception.BusinessException;
 import com.cf.smartq.exception.ThrowUtils;
-import com.cf.smartq.model.dto.user.UserAddRequest;
-import com.cf.smartq.model.dto.user.UserLoginRequest;
-import com.cf.smartq.model.dto.user.UserQueryRequest;
-import com.cf.smartq.model.dto.user.UserRegisterRequest;
-import com.cf.smartq.model.dto.user.UserUpdateMyRequest;
-import com.cf.smartq.model.dto.user.UserUpdateRequest;
+import com.cf.smartq.model.dto.user.*;
 import com.cf.smartq.model.entity.User;
 import com.cf.smartq.model.vo.LoginUserVO;
 import com.cf.smartq.model.vo.UserVO;
 import com.cf.smartq.service.UserService;
-
-import java.util.List;
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 import me.chanjar.weixin.common.bean.oauth2.WxOAuth2AccessToken;
@@ -33,12 +23,12 @@ import me.chanjar.weixin.mp.api.WxMpService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.DigestUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 import static com.cf.smartq.service.impl.UserServiceImpl.SALT;
 
@@ -67,6 +57,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/register")
+    @ApiOperation(value = "用户注册")
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -99,6 +90,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/login")
+    @ApiOperation(value = "用户登录")
     public BaseResponse<LoginUserVO> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
         if (userLoginRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -116,6 +108,7 @@ public class UserController {
      * 用户登录（微信开放平台）
      */
     @GetMapping("/login/wx_open")
+    @ApiOperation(value = "用户登录(微信开放平台")
     public BaseResponse<LoginUserVO> userLoginByWxOpen(HttpServletRequest request, HttpServletResponse response,
             @RequestParam("code") String code) {
         WxOAuth2AccessToken accessToken;
@@ -142,6 +135,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/logout")
+    @ApiOperation(value = "用户注销")
     public BaseResponse<Boolean> userLogout(HttpServletRequest request) {
         if (request == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -157,6 +151,7 @@ public class UserController {
      * @return
      */
     @GetMapping("/get/login")
+    @ApiOperation(value = "获取当前登录用户")
     public BaseResponse<LoginUserVO> getLoginUser(HttpServletRequest request) {
         User user = userService.getLoginUser(request);
         return ResultUtils.success(userService.getLoginUserVO(user));
@@ -174,6 +169,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/add")
+    @ApiOperation(value = "创建用户")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Long> addUser(@RequestBody UserAddRequest userAddRequest, HttpServletRequest request) {
         if (userAddRequest == null) {
@@ -198,6 +194,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/delete")
+    @ApiOperation(value = "删除用户")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> deleteUser(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
@@ -215,6 +212,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/update")
+    @ApiOperation(value = "更新用户")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> updateUser(@RequestBody UserUpdateRequest userUpdateRequest,
             HttpServletRequest request) {
@@ -237,6 +235,7 @@ public class UserController {
      */
     @GetMapping("/get")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @ApiOperation(value = "根据id获取用户(管理员)")
     public BaseResponse<User> getUserById(long id, HttpServletRequest request) {
         if (id <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -254,6 +253,7 @@ public class UserController {
      * @return
      */
     @GetMapping("/get/vo")
+    @ApiOperation(value = "根据id获取包装类")
     public BaseResponse<UserVO> getUserVOById(long id, HttpServletRequest request) {
         BaseResponse<User> response = getUserById(id, request);
         User user = response.getData();
@@ -268,6 +268,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/list/page")
+    @ApiOperation(value = "分页获取用户列表(管理员)")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Page<User>> listUserByPage(@RequestBody UserQueryRequest userQueryRequest,
             HttpServletRequest request) {
@@ -286,6 +287,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/list/page/vo")
+    @ApiOperation(value = "分页获取用户封装列表")
     public BaseResponse<Page<UserVO>> listUserVOByPage(@RequestBody UserQueryRequest userQueryRequest,
             HttpServletRequest request) {
         if (userQueryRequest == null) {
@@ -313,6 +315,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/update/my")
+    @ApiOperation(value = "更新个人信息")
     public BaseResponse<Boolean> updateMyUser(@RequestBody UserUpdateMyRequest userUpdateMyRequest,
             HttpServletRequest request) {
         if (userUpdateMyRequest == null) {

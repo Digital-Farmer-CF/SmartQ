@@ -19,6 +19,7 @@ import com.cf.smartq.model.entity.UserAnswer;
 import com.cf.smartq.model.vo.UserAnswerVO;
 import com.cf.smartq.service.UserAnswerService;
 import com.cf.smartq.service.UserService;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -52,6 +53,7 @@ public class UserAnswerController {
      * @return
      */
     @PostMapping("/add")
+    @ApiOperation(value = "创建用户回答")
     public BaseResponse<Long> addUserAnswer(@RequestBody UserAnswerAddRequest useranswerAddRequest, HttpServletRequest request) {
         ThrowUtils.throwIf(useranswerAddRequest == null, ErrorCode.PARAMS_ERROR);
         // 在此处将实体类和 DTO 进行转换
@@ -80,6 +82,7 @@ public class UserAnswerController {
      * @return
      */
     @PostMapping("/delete")
+    @ApiOperation(value = "删除用户回答")
     public BaseResponse<Boolean> deleteUserAnswer(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -107,6 +110,7 @@ public class UserAnswerController {
      */
     @PostMapping("/update")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @ApiOperation(value = "更新用户回答(管理员)")
     public BaseResponse<Boolean> updateUserAnswer(@RequestBody UserAnswerUpdateRequest useranswerUpdateRequest) {
         if (useranswerUpdateRequest == null || useranswerUpdateRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -135,6 +139,7 @@ public class UserAnswerController {
      * @return
      */
     @GetMapping("/get/vo")
+    @ApiOperation(value = "根据id获取用户回答")
     public BaseResponse<UserAnswerVO> getUserAnswerVOById(long id, HttpServletRequest request) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
         // 查询数据库
@@ -152,6 +157,7 @@ public class UserAnswerController {
      */
     @PostMapping("/list/page")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @ApiOperation(value = "分页获取用户回答列表(管理员)")
     public BaseResponse<Page<UserAnswer>> listUserAnswerByPage(@RequestBody UserAnswerQueryRequest useranswerQueryRequest) {
         long current = useranswerQueryRequest.getCurrent();
         long size = useranswerQueryRequest.getPageSize();
@@ -169,6 +175,7 @@ public class UserAnswerController {
      * @return
      */
     @PostMapping("/list/page/vo")
+    @ApiOperation(value = "分页获取用户回答列表")
     public BaseResponse<Page<UserAnswerVO>> listUserAnswerVOByPage(@RequestBody UserAnswerQueryRequest useranswerQueryRequest,
                                                                HttpServletRequest request) {
         long current = useranswerQueryRequest.getCurrent();
@@ -190,6 +197,7 @@ public class UserAnswerController {
      * @return
      */
     @PostMapping("/my/list/page/vo")
+    @ApiOperation(value = "分页获取当前登录用户创建的用户回答列表")
     public BaseResponse<Page<UserAnswerVO>> listMyUserAnswerVOByPage(@RequestBody UserAnswerQueryRequest useranswerQueryRequest,
                                                                  HttpServletRequest request) {
         ThrowUtils.throwIf(useranswerQueryRequest == null, ErrorCode.PARAMS_ERROR);
@@ -215,6 +223,7 @@ public class UserAnswerController {
      * @return
      */
     @PostMapping("/edit")
+    @ApiOperation(value = "编辑用户回答")
     public BaseResponse<Boolean> editUserAnswer(@RequestBody UserAnswerEditRequest useranswerEditRequest, HttpServletRequest request) {
         if (useranswerEditRequest == null || useranswerEditRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);

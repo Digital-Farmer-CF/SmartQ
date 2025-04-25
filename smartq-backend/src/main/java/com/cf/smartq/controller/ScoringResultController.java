@@ -1,6 +1,5 @@
 package com.cf.smartq.controller;
 
-import cn.hutool.json.JSON;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cf.smartq.annotation.AuthCheck;
@@ -20,6 +19,7 @@ import com.cf.smartq.model.entity.User;
 import com.cf.smartq.model.vo.ScoringResultVO;
 import com.cf.smartq.service.ScoringResultService;
 import com.cf.smartq.service.UserService;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -53,6 +53,7 @@ public class ScoringResultController {
      * @return
      */
     @PostMapping("/add")
+    @ApiOperation(value = "创建评分结果")
     public BaseResponse<Long> addScoringResult(@RequestBody ScoringResultAddRequest scoringresultAddRequest, HttpServletRequest request) {
         ThrowUtils.throwIf(scoringresultAddRequest == null, ErrorCode.PARAMS_ERROR);
         // DTO转为实体类
@@ -81,6 +82,7 @@ public class ScoringResultController {
      * @return
      */
     @PostMapping("/delete")
+    @ApiOperation(value = "删除评分结果")
     public BaseResponse<Boolean> deleteScoringResult(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -107,6 +109,7 @@ public class ScoringResultController {
      * @return
      */
     @PostMapping("/update")
+    @ApiOperation(value = "更新评分结果(管理员)")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> updateScoringResult(@RequestBody ScoringResultUpdateRequest scoringresultUpdateRequest) {
         if (scoringresultUpdateRequest == null || scoringresultUpdateRequest.getId() <= 0) {
@@ -136,6 +139,7 @@ public class ScoringResultController {
      * @return
      */
     @GetMapping("/get/vo")
+    @ApiOperation(value = "根据id获取评分结果")
     public BaseResponse<ScoringResultVO> getScoringResultVOById(long id, HttpServletRequest request) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
         // 查询数据库
@@ -153,6 +157,7 @@ public class ScoringResultController {
      */
     @PostMapping("/list/page")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @ApiOperation(value = "分页获取评分结果列表(管理员)")
     public BaseResponse<Page<ScoringResult>> listScoringResultByPage(@RequestBody ScoringResultQueryRequest scoringresultQueryRequest) {
         long current = scoringresultQueryRequest.getCurrent();
         long size = scoringresultQueryRequest.getPageSize();
@@ -170,6 +175,7 @@ public class ScoringResultController {
      * @return
      */
     @PostMapping("/list/page/vo")
+    @ApiOperation(value = "分页获取评分结果列表")
     public BaseResponse<Page<ScoringResultVO>> listScoringResultVOByPage(@RequestBody ScoringResultQueryRequest scoringresultQueryRequest,
                                                                HttpServletRequest request) {
         long current = scoringresultQueryRequest.getCurrent();
@@ -191,6 +197,7 @@ public class ScoringResultController {
      * @return
      */
     @PostMapping("/my/list/page/vo")
+    @ApiOperation(value = "分页获取当前登录用户创建的评分结果列表")
     public BaseResponse<Page<ScoringResultVO>> listMyScoringResultVOByPage(@RequestBody ScoringResultQueryRequest scoringresultQueryRequest,
                                                                  HttpServletRequest request) {
         ThrowUtils.throwIf(scoringresultQueryRequest == null, ErrorCode.PARAMS_ERROR);
@@ -216,6 +223,7 @@ public class ScoringResultController {
      * @return
      */
     @PostMapping("/edit")
+    @ApiOperation(value = "编辑评分结果")
     public BaseResponse<Boolean> editScoringResult(@RequestBody ScoringResultEditRequest scoringresultEditRequest, HttpServletRequest request) {
         if (scoringresultEditRequest == null || scoringresultEditRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
