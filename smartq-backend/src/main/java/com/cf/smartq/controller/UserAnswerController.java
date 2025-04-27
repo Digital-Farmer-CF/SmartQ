@@ -61,11 +61,11 @@ public class UserAnswerController {
         BeanUtils.copyProperties(useranswerAddRequest, useranswer);
         List<String> choices = useranswerAddRequest.getChoices();
         useranswer.setChoices(JSONUtil.toJsonStr(choices));
-        // 数据校验
-        useranswerService.validUserAnswer(useranswer, true);
         // 充默认值
         User loginUser = userService.getLoginUser(request);
         useranswer.setUserId(loginUser.getId());
+        // 数据校验
+        useranswerService.validUserAnswer(useranswer, true);
         // 写入数据库
         boolean result = useranswerService.save(useranswer);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);

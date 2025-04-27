@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 更新问题请求
@@ -23,8 +24,7 @@ public class QuestionUpdateRequest implements Serializable {
     /**
      * 题目内容（json格式）
      */
-    private QuestionContent questionContent;
-
+    private List<QuestionContent> questionContent;
     /**
      * 应用 id
      */

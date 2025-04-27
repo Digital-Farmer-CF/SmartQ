@@ -1,14 +1,10 @@
 package com.cf.smartq.model.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
+import lombok.Data;
+
 import java.io.Serializable;
 import java.util.Date;
-
-import com.cf.smartq.model.dto.question.QuestionContent;
-import lombok.Data;
 
 
 /**
@@ -27,7 +23,7 @@ public class Question implements Serializable {
     /**
      * 题目内容（json格式）
      */
-    private String questionContent;
+    private String QuestionContent;
 
     /**
      * 应用 id
@@ -42,11 +38,13 @@ public class Question implements Serializable {
     /**
      * 创建时间
      */
+    @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 
     /**
      * 更新时间
      */
+    @TableField(fill = FieldFill.INSERT)
     private Date updateTime;
 
     /**
@@ -99,7 +97,7 @@ public class Question implements Serializable {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
-        sb.append(", questionContent=").append(questionContent);
+        sb.append(", QuestionContent=").append(QuestionContent);
         sb.append(", appId=").append(appId);
         sb.append(", userId=").append(userId);
         sb.append(", createTime=").append(createTime);

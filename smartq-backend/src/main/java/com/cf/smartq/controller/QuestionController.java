@@ -56,13 +56,13 @@ public class QuestionController {
         // 将实体类和 DTO 进行转换
         Question question = new Question();
         BeanUtils.copyProperties(questionAddRequest, question);
-        QuestionContent questionContent = questionAddRequest.getQuestionContent();
+        List<QuestionContent> questionContent = questionAddRequest.getQuestionContent();
         question.setQuestionContent(JSONUtil.toJsonStr(questionContent));
-        // 数据校验
-        questionService.validQuestion(question, true);
         // todo 填充默认值
         User loginUser = userService.getLoginUser(request);
         question.setUserId(loginUser.getId());
+        // 数据校验
+        questionService.validQuestion(question, true);
         // 写入数据库
         boolean result = questionService.save(question);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
@@ -230,7 +230,7 @@ public class QuestionController {
         // 在此处将实体类和 DTO 进行转换
         Question question = new Question();
         BeanUtils.copyProperties(questionEditRequest, question);
-        QuestionContent questionContent = questionEditRequest.getQuestionContent();
+        List<QuestionContent> questionContent = questionEditRequest.getQuestionContent();
         question.setQuestionContent(JSONUtil.toJsonStr(questionContent));
         // 3. 设置 userId
         question.setUserId(userId);

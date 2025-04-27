@@ -50,15 +50,12 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         ThrowUtils.throwIf(question == null, ErrorCode.PARAMS_ERROR);
 
         // 校验题目内容不能为空
-        String questionContent = question.getQuestionContent();
+        String QuestionContent = question.getQuestionContent();
         if (add) {
-            ThrowUtils.throwIf(StringUtils.isBlank(questionContent), ErrorCode.PARAMS_ERROR, "题目内容不能为空");
+            ThrowUtils.throwIf(StringUtils.isBlank(QuestionContent), ErrorCode.PARAMS_ERROR, "题目内容不能为空");
         }
 
-        // 校验题目内容长度不超过 1000 字符
-        if (StringUtils.isNotBlank(questionContent)) {
-            ThrowUtils.throwIf(questionContent.length() > 1000, ErrorCode.PARAMS_ERROR, "题目内容过长，不能超过1000字符");
-        }
+
 
         // 校验应用 ID 必须有效
         Long appId = question.getAppId();
@@ -88,7 +85,8 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         Long userId = questionQueryRequest.getUserId();
         Date createTime = questionQueryRequest.getCreateTime();
         Date updateTime = questionQueryRequest.getUpdateTime();
-        QuestionContent questionContent = questionQueryRequest.getQuestionContent();  // 假设这是一个对象，可能需要转换为 JSON 字符串
+        List<QuestionContent> questionContent = questionQueryRequest.getQuestionContent();
+        // 假设这是一个对象，可能需要转换为 JSON 字符串
 
 
 

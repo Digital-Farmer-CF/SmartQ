@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 查询问题请求
@@ -27,8 +28,7 @@ public class QuestionQueryRequest extends PageRequest implements Serializable {
     /**
      * 题目内容（json格式）
      */
-    private QuestionContent questionContent;
-
+    private List<QuestionContent> questionContent;
     /**
      * 应用 id
      */

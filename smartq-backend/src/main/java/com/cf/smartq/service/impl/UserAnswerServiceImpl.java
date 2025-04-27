@@ -61,17 +61,6 @@ public class UserAnswerServiceImpl extends ServiceImpl<UserAnswerMapper, UserAns
             // 补充校验规则
             String appId1 = String.valueOf(appId);
             ThrowUtils.throwIf(StringUtils.isBlank(appId1), ErrorCode.PARAMS_ERROR);
-            String appType1 = String.valueOf(appType);
-            ThrowUtils.throwIf(StringUtils.isBlank(appType1), ErrorCode.PARAMS_ERROR);
-            String scoringStrategy1 = String.valueOf(scoringStrategy);
-            ThrowUtils.throwIf(StringUtils.isBlank(scoringStrategy1), ErrorCode.PARAMS_ERROR);
-            String resultId1 = String.valueOf(resultId);
-            ThrowUtils.throwIf(StringUtils.isBlank(resultId1), ErrorCode.PARAMS_ERROR);
-            ThrowUtils.throwIf(StringUtils.isBlank(resultName), ErrorCode.PARAMS_ERROR);
-            String createTime1 = String.valueOf(createTime);
-            String updateTime1 = String.valueOf(updateTime);
-            ThrowUtils.throwIf(StringUtils.isBlank(createTime1), ErrorCode.PARAMS_ERROR);
-            ThrowUtils.throwIf(StringUtils.isBlank(updateTime1), ErrorCode.PARAMS_ERROR);
             ThrowUtils.throwIf(StringUtils.isBlank(choices), ErrorCode.PARAMS_ERROR);
         }
         // 修改数据时，有参数则校验
