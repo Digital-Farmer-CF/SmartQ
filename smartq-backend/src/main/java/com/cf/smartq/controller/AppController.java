@@ -2,10 +2,7 @@ package com.cf.smartq.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cf.smartq.annotation.AuthCheck;
-import com.cf.smartq.common.BaseResponse;
-import com.cf.smartq.common.DeleteRequest;
-import com.cf.smartq.common.ErrorCode;
-import com.cf.smartq.common.ResultUtils;
+import com.cf.smartq.common.*;
 import com.cf.smartq.constant.UserConstant;
 import com.cf.smartq.exception.BusinessException;
 import com.cf.smartq.exception.ThrowUtils;
@@ -15,6 +12,7 @@ import com.cf.smartq.model.dto.app.AppQueryRequest;
 import com.cf.smartq.model.dto.app.AppUpdateRequest;
 import com.cf.smartq.model.entity.App;
 import com.cf.smartq.model.entity.User;
+import com.cf.smartq.model.enums.AppReviewStatusEnum;
 import com.cf.smartq.model.vo.AppVO;
 import com.cf.smartq.service.AppService;
 import com.cf.smartq.service.UserService;
@@ -243,5 +241,40 @@ public class AppController {
         return ResultUtils.success(true);
     }
 
-    // endregion
+    /**
+     * 应用审核
+     * @param reviewRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/review")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> doAppReview(@RequestBody ReviewRequest reviewRequest, HttpServletRequest request) {
+        ThrowUtils.throwIf(reviewRequest == null, ErrorCode.PARAMS_ERROR);
+        Long id = reviewRequest.getId();
+        Integer reviewStatus = reviewRequest.getReviewStatus();
+        // 校验
+        AppReviewStatusEnum reviewStatusEnum = AppReviewStatusEnum.getEnumByValue(reviewStatus);
+        if (id == null || reviewStatusEnum == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        // 判断是否存在
+        App oldApp = appService.getById(id);
+        ThrowUtils.throwIf(oldApp == null, ErrorCode.NOT_FOUND_ERROR);
+        // 已是该状态
+        if (oldApp.getReviewStatus().equals(reviewStatus)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请勿重复审核");
+        }
+        // 更新审核状态
+        User loginUser = userService.getLoginUser(request);
+        App app = new App();
+        app.setId(id);
+        app.setReviewStatus(reviewStatus);
+        app.setReviewerId(loginUser.getId());
+        app.setReviewTime(new Date());
+        boolean result = appService.updateById(app);
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        return ResultUtils.success(true);
+    }
+
 }

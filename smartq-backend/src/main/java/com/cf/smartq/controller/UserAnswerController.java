@@ -14,9 +14,12 @@ import com.cf.smartq.model.dto.useranswer.UserAnswerAddRequest;
 import com.cf.smartq.model.dto.useranswer.UserAnswerEditRequest;
 import com.cf.smartq.model.dto.useranswer.UserAnswerQueryRequest;
 import com.cf.smartq.model.dto.useranswer.UserAnswerUpdateRequest;
+import com.cf.smartq.model.entity.App;
 import com.cf.smartq.model.entity.User;
 import com.cf.smartq.model.entity.UserAnswer;
 import com.cf.smartq.model.vo.UserAnswerVO;
+import com.cf.smartq.scoring.ScoringStrategyExecutor;
+import com.cf.smartq.service.AppService;
 import com.cf.smartq.service.UserAnswerService;
 import com.cf.smartq.service.UserService;
 import io.swagger.annotations.ApiOperation;
@@ -42,6 +45,12 @@ public class UserAnswerController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private ScoringStrategyExecutor scoringStrategyExecutor;
+
+    @Resource
+    private AppService appService;
 
     // region 增删改查
 
@@ -71,6 +80,18 @@ public class UserAnswerController {
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         // 返回新写入的数据 id
         long newUserAnswerId = useranswer.getId();
+        //执行评分-获取评分结果
+        Long appId = useranswerAddRequest.getAppId();
+        App app = appService.getById(appId);
+        try {
+            UserAnswer scoredAnswer = scoringStrategyExecutor.doScore(useranswerAddRequest.getChoices(), app);
+            scoredAnswer.setResultId(newUserAnswerId);
+            //写入数据库
+            useranswerService.updateById(scoredAnswer);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "评分错误");
+        }
         return ResultUtils.success(newUserAnswerId);
     }
 

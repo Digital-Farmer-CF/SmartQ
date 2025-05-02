@@ -16,21 +16,20 @@ import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.jar.JarEntry;
 
-
-/**
- * 自定义评分-测试类
- */
-@ScoringStrategyConfig(appType = 0, scoringStrategy = 0)
-public class CustomTestScoringStrategyImpl extends ServiceImpl<ScoringResultMapper, ScoringResult> implements ScoringStrategy {
+@ScoringStrategyConfig(appType = 1, scoringStrategy = 0)
+public class CostumScoreScoringStrategyImpl extends ServiceImpl<ScoringResultMapper, ScoringResult> implements ScoringStrategy {
     @Resource
     private QuestionService questionService;
 
     @Resource
     private ScoringResultService scoringResultService;
 
+    //开始评分
     @Override
     public UserAnswer doscore(App app, List<String> Choices) {
+        //1.根据id查询到题目和题目结构信息(按分数降序排序)
         //得到QuestionContent->才能知道用户所选的答案对应的(I或者E)
         Question question = questionService.lambdaQuery()
                 .eq(Question::getAppId, app.getId())
@@ -39,8 +38,9 @@ public class CustomTestScoringStrategyImpl extends ServiceImpl<ScoringResultMapp
         List<ScoringResult> scoringResultlist = scoringResultService.lambdaQuery()
                 .eq(ScoringResult::getAppId, app.getId())
                 .list();
-        //初始化一个Map,用户统计属性的个数(I几个,E几个)
-        Map<String, Integer> optionCount = new HashMap<>();
+        //2.统计用户的总得分
+        //定义得分计数器
+        int totalscore = 0;
         //遍历用户的Choices,得到答案
         QuestionVO questionVO = QuestionVO.objToVo(question);
         List<QuestionContent> questionContent = questionVO.getQuestionContent();
@@ -50,36 +50,25 @@ public class CustomTestScoringStrategyImpl extends ServiceImpl<ScoringResultMapp
             for (QuestionContent content : questionContent) {
                 for (QuestionContent.Option option : content.getOptions()) {
                     if (option.getKey().equals(choice)) {
-                        //获取选项的result属性
-                        String result = option.getResult();
                         //如果result属性不在optionCount中,初始化为0
-                        if (!optionCount.containsKey(result)) {
-                            optionCount.put(result, 0);
+                        if (option.getKey().equals(choice)) {
+                            //获取选项的score属性
+                            int score = option.getScore();
+                            totalscore += score;
                         }
-                        //如果result属性在optionCount中,则加1
-                        optionCount.put(result, optionCount.get(result) + 1);
                     }
                 }
             }
         }
-
-        //遍历每种评分结果,计算哪个结果的得分更高
-        //初始化最高分数和最高分数对应的评分结果
-        int maxScore = 0;
+        //3.遍历得分结果,找到第一个用户分数大于得分范围的结果,作为最终结果
         ScoringResult maxScoreResult = scoringResultlist.get(0);
-        //遍历评分结果
         for (ScoringResult scoringResult : scoringResultlist) {
-            List<String> resultProp = JSONUtil.toList(scoringResult.getResultProp(), String.class);
-            //计算当前评分结果的分数   [I,E] => [10,5] => 15
-            int score = resultProp.stream()
-                    .mapToInt(prop -> optionCount.getOrDefault(prop, 0))
-                    .sum();
-            //如果当前评分结果的分数比最高分数高,则更新最高分数和最高分数对应的评分结果
-            if (score > maxScore) {
-                maxScore = score;
-                maxScoreResult = scoringResult;
+            if(totalscore >= scoringResult.getResultScoreRange()){
+                maxScoreResult =scoringResult;
+                break;
             }
         }
+        //4.构造返回值,填充对象的属性
 
         //构造返回值,填充答案对象的属性
         UserAnswer userAnswer = new UserAnswer();
@@ -90,6 +79,7 @@ public class CustomTestScoringStrategyImpl extends ServiceImpl<ScoringResultMapp
         userAnswer.setResultName(maxScoreResult.getResultName());
         userAnswer.setResultDesc(maxScoreResult.getResultDesc());
         userAnswer.setResultPicture(maxScoreResult.getResultPicture());
+        userAnswer.setResultScore(totalscore);
         return userAnswer;
     }
 }
