@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 
 /**
  * 应用接口
@@ -175,6 +176,11 @@ public class AppController {
         long size = appQueryRequest.getPageSize();
         // 限制爬虫
         ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+        Long appId = appQueryRequest.getId();
+        App app = appService.getById(appId);
+        if(!AppReviewStatusEnum.Pass.equals(AppReviewStatusEnum.getEnumByValue(app.getReviewStatus().toString()))){
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "该应用尚未通过审核");
+        }
         // 查询数据库
         Page<App> appPage = appService.page(new Page<>(current, size),
                 appService.getQueryWrapper(appQueryRequest));
@@ -242,38 +248,61 @@ public class AppController {
     }
 
     /**
-     * 应用审核
-     * @param reviewRequest
-     * @param request
-     * @return
+     * 应用审核接口
+     * @param reviewRequest 包含审核信息的请求体（应用ID和审核状态）
+     * @param request HTTP请求对象，用于获取当前登录用户
+     * @return 返回操作是否成功
      */
-    @PostMapping("/review")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @PostMapping("/review")  // 定义这是一个POST请求，路径为/review
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)  // 权限校验：必须是管理员角色才能访问
+    @ApiOperation(value = "审核应用")
     public BaseResponse<Boolean> doAppReview(@RequestBody ReviewRequest reviewRequest, HttpServletRequest request) {
+
+        // 1. 基本参数校验
+        // 检查请求体是否为null，如果是则抛出参数错误异常
         ThrowUtils.throwIf(reviewRequest == null, ErrorCode.PARAMS_ERROR);
+
+        // 从请求体中提取应用ID和审核状态
         Long id = reviewRequest.getId();
         Integer reviewStatus = reviewRequest.getReviewStatus();
-        // 校验
-        AppReviewStatusEnum reviewStatusEnum = AppReviewStatusEnum.getEnumByValue(reviewStatus);
+
+        // 2. 业务参数校验
+        // 通过枚举类验证审核状态是否有效
+        AppReviewStatusEnum reviewStatusEnum = AppReviewStatusEnum.getEnumByValue(String.valueOf(reviewStatus));
+
+        // 检查应用ID和审核状态是否有效
         if (id == null || reviewStatusEnum == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        // 判断是否存在
+
+        // 3. 业务逻辑校验
+        // 查询要审核的应用是否存在
         App oldApp = appService.getById(id);
+        // 如果应用不存在，抛出未找到异常
         ThrowUtils.throwIf(oldApp == null, ErrorCode.NOT_FOUND_ERROR);
-        // 已是该状态
+
+        // 检查是否已经是目标审核状态（避免重复审核）
         if (oldApp.getReviewStatus().equals(reviewStatus)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请勿重复审核");
         }
-        // 更新审核状态
+
+        // 4. 构建更新对象
+        // 获取当前登录用户（审核人）
         User loginUser = userService.getLoginUser(request);
+
+        // 创建要更新的应用对象
         App app = new App();
-        app.setId(id);
-        app.setReviewStatus(reviewStatus);
-        app.setReviewerId(loginUser.getId());
-        app.setReviewTime(new Date());
+        app.setId(id);  // 设置应用ID
+        app.setReviewStatus(reviewStatus);  // 设置新的审核状态
+        app.setReviewerId(loginUser.getId());  // 设置审核人ID
+        app.setReviewTime(new Date());  // 设置审核时间为当前时间
+
+        // 5. 执行更新操作
         boolean result = appService.updateById(app);
+        // 如果更新失败，抛出操作异常
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+
+        // 6. 返回成功响应
         return ResultUtils.success(true);
     }
 

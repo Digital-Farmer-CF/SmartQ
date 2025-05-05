@@ -17,6 +17,7 @@ import com.cf.smartq.model.dto.useranswer.UserAnswerUpdateRequest;
 import com.cf.smartq.model.entity.App;
 import com.cf.smartq.model.entity.User;
 import com.cf.smartq.model.entity.UserAnswer;
+import com.cf.smartq.model.enums.AppReviewStatusEnum;
 import com.cf.smartq.model.vo.UserAnswerVO;
 import com.cf.smartq.scoring.ScoringStrategyExecutor;
 import com.cf.smartq.service.AppService;
@@ -75,17 +76,21 @@ public class UserAnswerController {
         useranswer.setUserId(loginUser.getId());
         // 数据校验
         useranswerService.validUserAnswer(useranswer, true);
+        //判断app是否存在
+        Long appId = useranswerAddRequest.getAppId();
+        App app = appService.getById(appId);
+        ThrowUtils.throwIf(app == null, ErrorCode.NOT_FOUND_ERROR);
+        if(!AppReviewStatusEnum.Pass.equals(AppReviewStatusEnum.getEnumByValue(app.getReviewStatus().toString()))){
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "该应用尚未通过审核");
+        }
         // 写入数据库
         boolean result = useranswerService.save(useranswer);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         // 返回新写入的数据 id
         long newUserAnswerId = useranswer.getId();
-        //执行评分-获取评分结果
-        Long appId = useranswerAddRequest.getAppId();
-        App app = appService.getById(appId);
         try {
             UserAnswer scoredAnswer = scoringStrategyExecutor.doScore(useranswerAddRequest.getChoices(), app);
-            scoredAnswer.setResultId(newUserAnswerId);
+            scoredAnswer.setId(newUserAnswerId);
             //写入数据库
             useranswerService.updateById(scoredAnswer);
         } catch (Exception e) {

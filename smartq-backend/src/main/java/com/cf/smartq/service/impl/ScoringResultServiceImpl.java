@@ -60,9 +60,6 @@ public class ScoringResultServiceImpl extends ServiceImpl<ScoringResultMapper, S
             ThrowUtils.throwIf(StringUtils.isBlank(String.valueOf(appId)), ErrorCode.PARAMS_ERROR, "应用名不能为空");
             ThrowUtils.throwIf(StringUtils.isBlank(String.valueOf(userId)), ErrorCode.PARAMS_ERROR, "用户id不能为空");
             ThrowUtils.throwIf(StringUtils.isBlank(String.valueOf(resultScoreRange)), ErrorCode.PARAMS_ERROR, "评分结果不能为空");
-            if (createTime == null) {
-                ThrowUtils.throwIf(true, ErrorCode.PARAMS_ERROR, "创建时间不能为空");
-            }
         }
 
         // 公共校验（无论新增或修改）
@@ -74,12 +71,6 @@ public class ScoringResultServiceImpl extends ServiceImpl<ScoringResultMapper, S
         // 校验 resultScoreRange 是否在合理范围内
         if (resultScoreRange != null) {
             ThrowUtils.throwIf(resultScoreRange < 0 || resultScoreRange > 100, ErrorCode.PARAMS_ERROR, "评分结果范围必须在 0 到 100 之间");
-        }
-
-        // 校验创建时间和更新时间是否为空（假设它们不应该为空）
-
-        if (updateTime == null) {
-            ThrowUtils.throwIf(true, ErrorCode.PARAMS_ERROR, "更新时间不能为空");
         }
 
         // 校验时间的合理性（假设更新时间不能早于创建时间）

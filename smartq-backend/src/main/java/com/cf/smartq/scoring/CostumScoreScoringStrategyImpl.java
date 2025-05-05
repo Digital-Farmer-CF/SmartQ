@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.jar.JarEntry;
 
-@ScoringStrategyConfig(appType = 1, scoringStrategy = 0)
+@ScoringStrategyConfig(appType = 0, scoringStrategy = 0)
 public class CostumScoreScoringStrategyImpl extends ServiceImpl<ScoringResultMapper, ScoringResult> implements ScoringStrategy {
     @Resource
     private QuestionService questionService;
@@ -37,6 +37,7 @@ public class CostumScoreScoringStrategyImpl extends ServiceImpl<ScoringResultMap
         //得到预先设计好的ScoringResult->才能根据得到的答案(I或者E)给相应的人格加分
         List<ScoringResult> scoringResultlist = scoringResultService.lambdaQuery()
                 .eq(ScoringResult::getAppId, app.getId())
+                .orderByDesc(ScoringResult::getResultScoreRange)
                 .list();
         //2.统计用户的总得分
         //定义得分计数器
@@ -46,20 +47,21 @@ public class CostumScoreScoringStrategyImpl extends ServiceImpl<ScoringResultMap
         List<QuestionContent> questionContent = questionVO.getQuestionContent();
 
         // 遍历用户选择和问题内容，统计各选项结果
-        for (String choice : Choices) {
-            for (QuestionContent content : questionContent) {
-                for (QuestionContent.Option option : content.getOptions()) {
-                    if (option.getKey().equals(choice)) {
-                        //如果result属性不在optionCount中,初始化为0
-                        if (option.getKey().equals(choice)) {
-                            //获取选项的score属性
-                            int score = option.getScore();
-                            totalscore += score;
-                        }
-                    }
+        // 遍历题目和对应的用户选择
+        for (int i = 0; i < Math.min(questionContent.size(), Choices.size()); i++) {
+            String userChoice = Choices.get(i);         // 用户的第i个选择
+            QuestionContent content = questionContent.get(i);  // 第i道题
+
+            // 在当前题目中查找用户的选择
+            for (QuestionContent.Option option : content.getOptions()) {
+                if (option.getKey().equals(userChoice)) {
+                    // 找到匹配的选项，加分
+                    totalscore += option.getScore();
+                    break;  // 找到后就停止查找此题的其他选项
                 }
             }
         }
+
         //3.遍历得分结果,找到第一个用户分数大于得分范围的结果,作为最终结果
         ScoringResult maxScoreResult = scoringResultlist.get(0);
         for (ScoringResult scoringResult : scoringResultlist) {
