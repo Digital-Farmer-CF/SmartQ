@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.Optional;
 
 /**
  * 应用接口
@@ -178,7 +179,11 @@ public class AppController {
         ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
         Long appId = appQueryRequest.getId();
         App app = appService.getById(appId);
-        if(!AppReviewStatusEnum.Pass.equals(AppReviewStatusEnum.getEnumByValue(app.getReviewStatus().toString()))){
+        String reviewStatus = Optional.ofNullable(app)
+                .map(App::getReviewStatus)
+                .map(Object::toString)
+                .orElse("");
+        if(!AppReviewStatusEnum.Pass.equals(AppReviewStatusEnum.getEnumByValue(reviewStatus))){
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "该应用尚未通过审核");
         }
         // 查询数据库
