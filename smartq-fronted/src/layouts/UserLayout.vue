@@ -11,7 +11,7 @@
         <router-view />
       </a-layout-content>
       <a-layout-footer class="footer">
-        <a href="https://www.code-nav.cn" target="_blank"> CF </a>
+        <a target="_blank"> CF </a>
       </a-layout-footer>
     </a-layout>
   </div>
