@@ -9,8 +9,12 @@
     "openapi": "ts-node ./openapi.config.ts"
   },
   "dependencies": {
+    "@bytemd/plugin-gfm": "^1.22.0",
+    "@bytemd/plugin-highlight": "^1.22.0",
+    "@bytemd/vue-next": "^1.22.0",
     "axios": "^1.9.0",
     "core-js": "^3.8.3",
+    "pinia": "^3.0.2",
     "vue": "^3.2.13",
     "vue-router": "^4.0.3"
   },
