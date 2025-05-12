@@ -69,7 +69,7 @@ public class UserController {
         String userName = userRegisterRequest.getUserName();
 
         // 检查账户、密码或确认密码是否为空
-        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword,userRole)) {
+        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
             return null;
         }
 
