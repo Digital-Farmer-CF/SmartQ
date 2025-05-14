@@ -178,14 +178,19 @@ public class AppController {
         // 限制爬虫
         ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
         Long appId = appQueryRequest.getId();
-        App app = appService.getById(appId);
-        String reviewStatus = Optional.ofNullable(app)
-                .map(App::getReviewStatus)
-                .map(Object::toString)
-                .orElse("");
-        if(!AppReviewStatusEnum.Pass.equals(AppReviewStatusEnum.getEnumByValue(reviewStatus))){
-            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "该应用尚未通过审核");
+      // 只有当用户提供了应用ID时，才检查该应用是否审核通过
+        if (appId != null) {
+            App app = appService.getById(appId);
+            String reviewStatus = Optional.ofNullable(app)
+                    .map(App::getReviewStatus)
+                    .map(Object::toString)
+                    .orElse("");
+            if(!AppReviewStatusEnum.Pass.equals(AppReviewStatusEnum.getEnumByValue(reviewStatus))){
+                throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "该应用尚未通过审核");
+            }
         }
+       // 继续查询数据库...
+
         // 查询数据库
         Page<App> appPage = appService.page(new Page<>(current, size),
                 appService.getQueryWrapper(appQueryRequest));
