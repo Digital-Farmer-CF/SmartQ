@@ -88,6 +88,9 @@ public class UserAnswerServiceImpl extends ServiceImpl<UserAnswerMapper, UserAns
         Integer scoringStrategy = useranswerQueryRequest.getScoringStrategy();
         Integer resultScore = useranswerQueryRequest.getResultScore();
         Long userId = useranswerQueryRequest.getUserId();
+        String resultName = useranswerQueryRequest.getResultName();
+        String resultDesc = useranswerQueryRequest.getResultDesc();
+        Long appId = useranswerQueryRequest.getAppId();
         // 补充需要的查询条件
         // 精确查询
         queryWrapper.ne(ObjectUtils.isNotEmpty(id), "id", id);
@@ -95,6 +98,13 @@ public class UserAnswerServiceImpl extends ServiceImpl<UserAnswerMapper, UserAns
         queryWrapper.eq(ObjectUtils.isNotEmpty(scoringStrategy), "scoringStrategy", scoringStrategy);
         queryWrapper.eq(ObjectUtils.isNotEmpty(resultScore), "resultScore", resultScore);
         queryWrapper.eq(ObjectUtils.isNotEmpty(userId), "userId", userId);
+        queryWrapper.eq(ObjectUtils.isNotEmpty(resultName), "resultName", resultName);
+        queryWrapper.eq(ObjectUtils.isNotEmpty(resultDesc), "resultDesc", resultDesc);
+        queryWrapper.eq(ObjectUtils.isNotEmpty(appId), "appId", appId);
+        // 模糊查询
+
+
+
         return queryWrapper;
     }
 
