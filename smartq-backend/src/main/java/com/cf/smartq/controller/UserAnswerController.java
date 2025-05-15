@@ -275,6 +275,11 @@ public class UserAnswerController {
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(true);
     }
-
-    // endregion
+     @GetMapping("/generate/id")
+     public BaseResponse<Long> generateUserAnswerId() {
+        long id = System.currentTimeMillis(); // 示例：用时间戳做唯一 ID，也可以接入雪花算法等
+        return ResultUtils.success(id);
+    }
 }
+    // endregion
+
