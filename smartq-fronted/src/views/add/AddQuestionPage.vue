@@ -33,6 +33,7 @@
           <a-form-item field="posts.post1" :label="`题目 ${index + 1} 标题`">
             <a-input v-model="question.title" placeholder="请输入标题" />
           </a-form-item>
+
           <!--  题目选项 -->
           <a-space size="large">
             <h4>题目 {{ index + 1 }} 选项列表</h4>
@@ -117,7 +118,7 @@ const props = withDefaults(defineProps<Props>(), {
 const router = useRouter();
 
 // 题目内容结构（理解为题目列表）
-const questionContent = ref<API.QuestionContentDTO[]>([]);
+const questionContent = ref<API.QuestionContent[]>([]);
 
 /**
  * 添加题目
@@ -143,7 +144,7 @@ const deleteQuestion = (index: number) => {
  * @param question
  * @param index
  */
-const addQuestionOption = (question: API.QuestionContentDTO, index: number) => {
+const addQuestionOption = (question: API.QuestionContent, index: number) => {
   if (!question.options) {
     question.options = [];
   }
@@ -158,10 +159,7 @@ const addQuestionOption = (question: API.QuestionContentDTO, index: number) => {
  * @param question
  * @param index
  */
-const deleteQuestionOption = (
-  question: API.QuestionContentDTO,
-  index: number
-) => {
+const deleteQuestionOption = (question: API.QuestionContent, index: number) => {
   if (!question.options) {
     question.options = [];
   }

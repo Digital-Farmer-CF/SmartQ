@@ -127,3 +127,10 @@ export async function updateUserAnswerUsingPost(
     ...(options || {}),
   });
 }
+/** generateUserAnswerId GET /api/useranswer/generate/id */
+export async function generateUserAnswerIdUsingGet(options?: { [key: string]: any }) {
+  return request<API.BaseResponseLong_>('/api/useranswer/generate/id', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
