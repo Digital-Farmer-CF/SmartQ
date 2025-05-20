@@ -127,3 +127,10 @@ export async function updateQuestionUsingPost(
     ...(options || {}),
   });
 }
+/**
+ * AI生成题目接口
+ * @param params 请求参数
+ */
+export async function aiGenerateQuestionUsingPost(params: API.AiGenerateQuestionRequest) {
+  return request.post('/api/question/ai_generate', params);
+}

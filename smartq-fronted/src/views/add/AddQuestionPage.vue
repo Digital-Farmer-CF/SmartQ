@@ -9,12 +9,22 @@
       @submit="handleSubmit"
     >
       <a-form-item label="应用 id">
-        {{ appId }}
+        {{ finalAppId }}
       </a-form-item>
       <a-form-item label="题目列表" :content-flex="false" :merge-props="false">
-        <a-button @click="addQuestion(questionContent.length)">
-          底部添加题目
-        </a-button>
+        <a-space size="medium">
+          <a-button @click="addQuestion(questionContent.length)">
+            底部添加题目
+          </a-button>
+          <!-- AI 生成抽屉 -->
+          <AiGenerateQuestionDrawer
+            :appId="finalAppId"
+            :onSuccess="onAiGenerateSuccess"
+            :onSSESuccess="onAiGenerateSuccessSSE"
+            :onSSEClose="onSSEClose"
+            :onSSEStart="onSSEStart"
+          />
+        </a-space>
         <!-- 遍历每道题目 -->
         <div v-for="(question, index) in questionContent" :key="index">
           <a-space size="large">
@@ -33,7 +43,6 @@
           <a-form-item field="posts.post1" :label="`题目 ${index + 1} 标题`">
             <a-input v-model="question.title" placeholder="请输入标题" />
           </a-form-item>
-
           <!--  题目选项 -->
           <a-space size="large">
             <h4>题目 {{ index + 1 }} 选项列表</h4>
@@ -95,24 +104,33 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, ref, watchEffect, withDefaults } from "vue";
+import { defineProps, ref, watchEffect, withDefaults, computed } from "vue";
 import API from "@/api";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import {
   addQuestionUsingPost,
   editQuestionUsingPost,
   listQuestionVoByPageUsingPost,
 } from "@/api/questionController";
 import message from "@arco-design/web-vue/es/message";
+import AiGenerateQuestionDrawer from "@/views/add/components/AiGenerateQuestionDrawer.vue";
 
+// 支持 props 方式传递 appId
 interface Props {
-  appId: string;
+  appId?: string;
 }
-
 const props = withDefaults(defineProps<Props>(), {
-  appId: () => {
-    return "";
-  },
+  appId: () => "",
+});
+
+const route = useRoute();
+
+// 兼容 props 和路由参数
+const finalAppId = computed(() => {
+  // 优先用 props.appId，没有就用路由 query 里的
+  return props.appId && props.appId !== ""
+    ? props.appId
+    : (route.query.appId as string) || "";
 });
 
 const router = useRouter();
@@ -172,11 +190,12 @@ const oldQuestion = ref<API.QuestionVO>();
  * 加载数据
  */
 const loadData = async () => {
-  if (!props.appId) {
+  if (!finalAppId.value) {
+    message.error("缺少 appId，无法加载数据");
     return;
   }
   const res = await listQuestionVoByPageUsingPost({
-    appId: props.appId as any,
+    appId: finalAppId.value as any,
     current: 1,
     pageSize: 1,
     sortField: "createTime",
@@ -201,7 +220,8 @@ watchEffect(() => {
  * 提交
  */
 const handleSubmit = async () => {
-  if (!props.appId || !questionContent.value) {
+  if (!finalAppId.value || !questionContent.value) {
+    message.error("缺少 appId 或题目信息，无法提交");
     return;
   }
   let res: any;
@@ -209,22 +229,54 @@ const handleSubmit = async () => {
   if (oldQuestion.value?.id) {
     res = await editQuestionUsingPost({
       id: oldQuestion.value.id,
+      appId: oldQuestion.value.appId,
       questionContent: questionContent.value,
     });
   } else {
     // 创建
     res = await addQuestionUsingPost({
-      appId: props.appId as any,
+      appId: finalAppId.value as any,
       questionContent: questionContent.value,
     });
   }
   if (res.data.code === 0) {
     message.success("操作成功，即将跳转到应用详情页");
     setTimeout(() => {
-      router.push(`/app/detail/${props.appId}`);
+      router.push(`/app/detail/${finalAppId.value}`);
     }, 3000);
   } else {
     message.error("操作失败，" + res.data.message);
   }
+};
+
+/**
+ * AI 生成题目成功后执行
+ */
+const onAiGenerateSuccess = (result: API.QuestionContent[]) => {
+  message.success(`AI 生成题目成功，生成 ${result.length} 道题目`);
+  questionContent.value = [...questionContent.value, ...result];
+};
+
+/**
+ * AI 生成题目成功后执行（SSE）
+ */
+const onAiGenerateSuccessSSE = (result: API.QuestionContent) => {
+  questionContent.value = [...questionContent.value, result];
+};
+
+/**
+ * SSE 开始生成
+ * @param event
+ */
+const onSSEStart = (event: any) => {
+  message.success("开始生成");
+};
+
+/**
+ * SSE 生成完毕
+ * @param event
+ */
+const onSSEClose = (event: any) => {
+  message.success("生成完毕");
 };
 </script>

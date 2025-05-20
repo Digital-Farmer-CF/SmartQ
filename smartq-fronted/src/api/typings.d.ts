@@ -754,4 +754,10 @@ declare namespace API {
     userProfile?: string;
     userRole?: string;
   };
+  // 在现有 API 命名空间中添加以下接口定义
+  type AiGenerateQuestionRequest = {
+    appId?: string | number;
+    questionNumber: number;
+    optionNumber: number;
+  };
 }
