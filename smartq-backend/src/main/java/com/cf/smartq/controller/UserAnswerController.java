@@ -55,20 +55,15 @@ public class UserAnswerController {
 
     // region 增删改查
 
-    /**
-     * 创建用户回答
-     *
-     * @param useranswerAddRequest
-     * @param request
-     * @return
-     */
     @PostMapping("/add")
     @ApiOperation(value = "创建用户回答")
     public BaseResponse<Long> addUserAnswer(@RequestBody UserAnswerAddRequest useranswerAddRequest, HttpServletRequest request) {
         ThrowUtils.throwIf(useranswerAddRequest == null, ErrorCode.PARAMS_ERROR);
-        // 在此处将实体类和 DTO 进行转换
+        // 实体类和 DTO 转换
         UserAnswer useranswer = new UserAnswer();
         BeanUtils.copyProperties(useranswerAddRequest, useranswer);
+        // 关键！插入时不带 id，避免主键冲突
+        useranswer.setId(null);
         List<String> choices = useranswerAddRequest.getChoices();
         useranswer.setChoices(JSONUtil.toJsonStr(choices));
         // 充默认值
@@ -80,7 +75,7 @@ public class UserAnswerController {
         Long appId = useranswerAddRequest.getAppId();
         App app = appService.getById(appId);
         ThrowUtils.throwIf(app == null, ErrorCode.NOT_FOUND_ERROR);
-        if(!AppReviewStatusEnum.Pass.equals(AppReviewStatusEnum.getEnumByValue(app.getReviewStatus().toString()))){
+        if (!AppReviewStatusEnum.Pass.equals(AppReviewStatusEnum.getEnumByValue(app.getReviewStatus().toString()))) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "该应用尚未通过审核");
         }
         // 写入数据库
@@ -99,6 +94,7 @@ public class UserAnswerController {
         }
         return ResultUtils.success(newUserAnswerId);
     }
+
 
     /**
      * 删除用户回答

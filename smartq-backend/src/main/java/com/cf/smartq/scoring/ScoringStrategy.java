@@ -15,4 +15,5 @@ public interface ScoringStrategy extends IService<ScoringResult> {
      * 开始评分
      */
     UserAnswer doscore(App app, List<String> Choices);
+
 }

@@ -98,3 +98,9 @@ knife4j:
         api-rule: package
         api-rule-resources:
           - com.cf.smartq.controller
+ai:
+  apiKey: 6e048e41f2474d40b598564d54b4c3ac.0aP26tnlyDKAtQOe
+  request-timeout: 120
+  connect-timeout: 10
+  read-timeout: 10
+  write-timeout: 10
