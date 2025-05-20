@@ -1,5 +1,7 @@
 package com.cf.smartq.scoring;
 
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.digest.DigestUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -13,10 +15,13 @@ import com.cf.smartq.model.entity.ScoringResult;
 import com.cf.smartq.model.entity.UserAnswer;
 import com.cf.smartq.model.vo.QuestionVO;
 import com.cf.smartq.service.QuestionService;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @ScoringStrategyConfig(appType = 1, scoringStrategy = 1)
 public class AiTestScoringStrategy extends ServiceImpl<ScoringResultMapper, ScoringResult> implements ScoringStrategy {
@@ -26,6 +31,16 @@ public class AiTestScoringStrategy extends ServiceImpl<ScoringResultMapper, Scor
 
     @Resource
     private AiManager aiManager;
+
+    /**
+     * 创建AI评分结果本地缓存
+     */
+    private final Cache<String, String> answerCacheMap =
+            Caffeine.newBuilder().initialCapacity(1024)
+                    // 缓存5分钟移除
+                    .expireAfterAccess(5L, TimeUnit.MINUTES)
+                    .build();
+
 
     private static final String AI_TEST_SCORING_SYSTEM_MESSAGE = "你是一位严谨的判题专家，我会给你如下信息：\n" +
             "```\n" +
@@ -60,12 +75,26 @@ public class AiTestScoringStrategy extends ServiceImpl<ScoringResultMapper, Scor
     @Override
     public UserAnswer doscore(App app, List<String> choices) {
         Long appId = app.getId();
+        String jsonStr = JSONUtil.toJsonStr(choices);
+        String cacheKey = buildCacheKey(appId, jsonStr);
+        String answerJson = answerCacheMap.getIfPresent(cacheKey);
+        // 如果有缓存，直接返回
+        if (StrUtil.isNotBlank(answerJson)) {
+            // 构造返回值，填充答案对象的属性
+            UserAnswer userAnswer = JSONUtil.toBean(answerJson, UserAnswer.class);
+            userAnswer.setAppId(appId);
+            userAnswer.setAppType(app.getAppType());
+            userAnswer.setScoringStrategy(app.getScoringStrategy());
+            userAnswer.setChoices(jsonStr);
+            return userAnswer;
+        }
         // 1. 查询题目
         Question question = questionService.getOne(
                 Wrappers.lambdaQuery(Question.class).eq(Question::getAppId, appId)
         );
         QuestionVO questionVO = QuestionVO.objToVo(question);
         List<QuestionContent> questionContent = questionVO.getQuestionContent();
+
 
         // 2. 构造Prompt & 调用AI
         String userMessage = getAiTestScoringUserMessage(app, questionContent, choices);
@@ -92,15 +121,21 @@ public class AiTestScoringStrategy extends ServiceImpl<ScoringResultMapper, Scor
             System.err.println("AI回复解析失败: " + e.getMessage());
             throw new RuntimeException("AI评分解析失败！", e);
         }
-
+        // 缓存结果
+        answerCacheMap.put(cacheKey, json);
         // 5. 解析评分结果为 UserAnswer
         UserAnswer userAnswer = JSONUtil.toBean(json, UserAnswer.class);
-
         // 6. 补充其他信息
         userAnswer.setAppId(appId);
         userAnswer.setAppType(app.getAppType());
         userAnswer.setScoringStrategy(app.getScoringStrategy());
         userAnswer.setChoices(JSONUtil.toJsonStr(choices));
         return userAnswer;
+    }
+    /**
+     * 构建缓存key
+     */
+    private String buildCacheKey(Long appId, String choicesStr) {
+        return DigestUtil.md5Hex(appId + ":" + choicesStr);
     }
 }
