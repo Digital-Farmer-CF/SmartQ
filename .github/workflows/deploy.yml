@@ -21,7 +21,7 @@ jobs:
           mvn clean package -DskipTests
 
       # 3. 构建前端
-      - name: Build Frontend
+      - name: Build Fronted
         run: |
           cd frontend
           npm install
