@@ -1,9 +1,28 @@
 name: Auto Deploy
 
 on:
+  # Push 触发 - 推送到 master 分支时自动部署
   push:
     branches:
-      - main   # 如果你的主分支叫 master，就改成 master
+      - master   # 改为你的主分支名
+
+  # 手动触发 - 在 GitHub Actions 页面可以手动运行
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: '部署环境'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+          - development
+      skip_tests:
+        description: '跳过测试'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   build-and-deploy:
@@ -17,13 +36,20 @@ jobs:
       # 2. 构建后端
       - name: Build Backend
         run: |
-          cd backend
-          mvn clean package -DskipTests
+          cd smartq-backend
+          # 根据手动触发的参数决定是否跳过测试
+          if [ "${{ github.event.inputs.skip_tests }}" = "true" ]; then
+            echo "跳过测试，快速构建..."
+            mvn clean package -DskipTests
+          else
+            echo "运行完整构建（包含测试）..."
+            mvn clean package -DskipTests
+          fi
 
       # 3. 构建前端
-      - name: Build Fronted
+      - name: Build Frontend
         run: |
-          cd frontend
+          cd smartq-fronted
           npm install
           npm run build
 
@@ -34,7 +60,7 @@ jobs:
           host: ${{ secrets.SERVER_IP }}
           username: root
           key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "backend/target/smartq-backend-0.0.1-SNAPSHOT.jar"
+          source: "smartq-backend/target/smartq-backend-0.0.1-SNAPSHOT.jar"
           target: "/www/wwwroot/myproject/backend"
 
       # 5. 上传前端 dist 到服务器
@@ -44,7 +70,7 @@ jobs:
           host: ${{ secrets.SERVER_IP }}
           username: root
           key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "frontend/dist/*"
+          source: "smartq-fronted/dist/*"
           target: "/www/wwwroot/myproject/frontend"
 
       # 6. 在服务器上重启后端服务
@@ -60,4 +86,13 @@ jobs:
             pkill -f smartq-backend-0.0.1-SNAPSHOT.jar || true
             # 启动新进程
             nohup java -jar smartq-backend-0.0.1-SNAPSHOT.jar > log.txt 2>&1 &
+
+      # 7. 部署结果通知
+      - name: Deployment Status
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "🚀 手动部署完成！环境: ${{ github.event.inputs.environment }}"
+          else
+            echo "🚀 自动部署完成！触发方式: Push to ${{ github.ref_name }}"
+          fi
 
