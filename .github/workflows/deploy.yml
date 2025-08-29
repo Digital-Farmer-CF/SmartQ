@@ -1,0 +1,63 @@
+name: Auto Deploy
+
+on:
+  push:
+    branches:
+      - main   # 如果你的主分支叫 master，就改成 master
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 拉取代码
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. 构建后端
+      - name: Build Backend
+        run: |
+          cd backend
+          mvn clean package -DskipTests
+
+      # 3. 构建前端
+      - name: Build Frontend
+        run: |
+          cd frontend
+          npm install
+          npm run build
+
+      # 4. 上传后端 jar 到服务器
+      - name: Upload Backend Jar
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: root
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: "backend/target/smartq-backend-0.0.1-SNAPSHOT.jar"
+          target: "/www/wwwroot/myproject/backend"
+
+      # 5. 上传前端 dist 到服务器
+      - name: Upload Frontend Dist
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: root
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: "frontend/dist/*"
+          target: "/www/wwwroot/myproject/frontend"
+
+      # 6. 在服务器上重启后端服务
+      - name: Restart Backend
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: root
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd /www/wwwroot/myproject/backend
+            # 停掉旧进程
+            pkill -f smartq-backend-0.0.1-SNAPSHOT.jar || true
+            # 启动新进程
+            nohup java -jar smartq-backend-0.0.1-SNAPSHOT.jar > log.txt 2>&1 &
+

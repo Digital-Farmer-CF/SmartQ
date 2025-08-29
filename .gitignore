@@ -1,0 +1,22 @@
+# 敏感配置文件
+smartq-backend/application-local.yml
+smartq-backend/.env
+*.local.yml
+.env
+
+# IDE 文件
+.idea/
+*.iml
+.vscode/
+
+# 编译文件
+target/
+node_modules/
+dist/
+
+# 日志文件
+*.log
+
+# 系统文件
+.DS_Store
+Thumbs.db
